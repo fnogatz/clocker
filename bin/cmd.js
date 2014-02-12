@@ -16,8 +16,14 @@ var db = level(path.join(datadir, 'db'), { encoding: 'json' });
 if (argv.h) usage(0)
 else if (argv._[0] === 'start') {
     var d = argv.d ? new Date(argv.d) : new Date;
-    var key = strftime('time!%F %T', d);
-    db.put(key, 0);
+    var type = argv.type || argv.t || 'undefined';
+    var pkey = strftime('time!%F %T', d);
+    var tkey = 'time-type!' + type + strftime('!%F %T', d);
+    db.batch([
+        { key: pkey, value: { type: type } },
+        { key: tkey, value: 0 }
+    ], error);
+    db.put(key, { type: argv.type || argv.t });
 }
 else if (argv._[0] === 'stop') {
     var d = argv.d ? new Date(argv.d) : new Date;
@@ -26,7 +32,8 @@ else if (argv._[0] === 'stop') {
         limit: 1, reverse: true
     });
     s.once('data', function (row) {
-        db.put(row.key, strftime('%F %T', d));
+        row.value.end = strftime('%F %T', d);
+        db.put(row.key, row, error);
     });
 }
 else if (argv._[0] === 'status') {
@@ -37,7 +44,7 @@ else if (argv._[0] === 'status') {
     s.once('data', function (row) {
         var started = new Date(row.key.split('!')[1]);
         if (!row.value) {
-            var elapsed = ((new Date) - started) / 1000;
+            var elapsed = (new Date) - started;
             console.log('elapsed time: ' + fmt(elapsed));
         }
         else {
@@ -46,15 +53,44 @@ else if (argv._[0] === 'status') {
     });
 }
 else if (argv._[0] === 'list') {
-    var s = db.createReadStream({ gt: 'time!', lt: 'time!~', reverse: true });
-    s.once('data', function (row) {
-        var start = row.key.split('!')[1];
-        var elapsed = (
-            (row.value ? new Date(row.value) : new Date) - new Date(start)
-        ) / 1000;
+    var s = db.createReadStream({ gt: 'time!', lt: 'time!~' });
+    s.on('error', error);
+    s.on('data', function (row) {
+        if (argv.raw) return console.log(JSON.stringify(row));
         
-        var end = row.value ? row.value : 'NOW';
-        console.log(start + ' - ' + end + '  (' + fmt(elapsed) + ')');
+        var start = row.key.split('!')[1];
+        var end = row.value.end;
+        var elapsed = (end ? new Date(end) : new Date) - new Date(start);
+        
+        console.log(
+            '%s  %s - %s  (%s)%s',
+            new Date(start).valueOf(), start, end || 'NOW', fmt(elapsed),
+            (row.value.type ? '  [' + row.value.type + ']' : '')
+        );
+    });
+}
+else if (argv._[0] === 'set') {
+    db.put(argv._[1], JSON.parse(argv._[2]), error);
+}
+else if (argv._[0] === 'put') {
+    db.put(argv._[1], JSON.parse(argv._[2]), error);
+}
+else if (argv._[0] === 'get') {
+    db.get(argv._[1], function (err, row) {
+        if (err) {
+            console.error(String(err));
+            process.exit(1);
+        }
+        else console.log(row);
+    });
+}
+else if (argv._[0] === 'move') {
+    db.get(argv._[1], function (err, row) {
+        if (err) error(err);
+        else db.batch([ 
+            { type: 'del', key: argv._[1] },
+            { type: 'put', key: argv._[2], value: row }
+        ], error);
     });
 }
 else usage(1)
@@ -72,8 +108,15 @@ function pad (s, len) {
 }
 
 function fmt (elapsed) {
-    var hh = pad(Math.floor(elapsed / 60 / 60), 2);
-    var mm = pad(Math.floor(elapsed / 60 % 60), 2);
-    var ss = pad(Math.floor(elapsed % 60), 2);
+    var n = elapsed / 1000;
+    var hh = pad(Math.floor(n / 60 / 60), 2);
+    var mm = pad(Math.floor(n / 60 % 60), 2);
+    var ss = pad(Math.floor(n % 60), 2);
     return [ hh, mm, ss ].join(':');
+}
+
+function error (err) {
+    if (!err) return;
+    console.error(String(err));
+    process.exit(1);
 }
