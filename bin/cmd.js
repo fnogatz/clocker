@@ -38,14 +38,23 @@ else if (argv._[0] === 'status') {
         var started = new Date(row.key.split('!')[1]);
         if (!row.value) {
             var elapsed = ((new Date) - started) / 1000;
-            var hh = pad(Math.floor(elapsed / 60 / 60), 2);
-            var mm = pad(Math.floor(elapsed / 60 % 60), 2);
-            var ss = pad(Math.floor(elapsed % 60), 2);
-            console.log('elapsed time: ' + [ hh, mm, ss ].join(':'));
+            console.log('elapsed time: ' + fmt(elapsed));
         }
         else {
             console.log('stopped');
         }
+    });
+}
+else if (argv._[0] === 'list') {
+    var s = db.createReadStream({ gt: 'time!', lt: 'time!~', reverse: true });
+    s.once('data', function (row) {
+        var start = row.key.split('!')[1];
+        var elapsed = (
+            (row.value ? new Date(row.value) : new Date) - new Date(start)
+        ) / 1000;
+        
+        var end = row.value ? row.value : 'NOW';
+        console.log(start + ' - ' + end + '  (' + fmt(elapsed) + ')');
     });
 }
 else usage(1)
@@ -60,4 +69,11 @@ function usage (code) {
 
 function pad (s, len) {
     return Array(Math.max(0, len - String(s).length + 1)).join('0') + s;
+}
+
+function fmt (elapsed) {
+    var hh = pad(Math.floor(elapsed / 60 / 60), 2);
+    var mm = pad(Math.floor(elapsed / 60 % 60), 2);
+    var ss = pad(Math.floor(elapsed % 60), 2);
+    return [ hh, mm, ss ].join(':');
 }
