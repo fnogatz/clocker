@@ -4,10 +4,12 @@ var path = require('path');
 var mkdirp = require('mkdirp');
 var minimist = require('minimist');
 var level = require('level');
+var strftime = require('strftime');
 
 var argv = minimist(process.argv.slice(2));
 var HOME = process.env.HOME || process.env.USERDIR;
 var datadir = argv.d || path.join(HOME, '.timetrack');
+mkdirp.sync(datadir);
 
 var db = level(path.join(datadir, 'db'), { encoding: 'json' });
 
@@ -38,7 +40,7 @@ else if (argv._[0] === 'status') {
             var elapsed = ((new Date) - started) / 1000;
             var hh = pad(Math.floor(elapsed / 60 / 60), 2);
             var mm = pad(Math.floor(elapsed / 60 % 60), 2);
-            var ss = pad(Math.floor(elapsed / 60 / 60 % 60), 2);
+            var ss = pad(Math.floor(elapsed % 60), 2);
             console.log('elapsed time: ' + [ hh, mm, ss ].join(':'));
         }
         else {
@@ -57,5 +59,5 @@ function usage (code) {
 }
 
 function pad (s, len) {
-    return Array(Math.max(0, s.length - len + 1)).join('0') + s;
+    return Array(Math.max(0, len - String(s).length + 1)).join('0') + s;
 }
