@@ -58,13 +58,17 @@ else if (argv._[0] === 'list') {
     s.on('data', function (row) {
         if (argv.raw) return console.log(JSON.stringify(row));
         
-        var start = row.key.split('!')[1];
-        var end = row.value.end;
-        var elapsed = (end ? new Date(end) : new Date) - new Date(start);
+        var start = new Date(row.key.split('!')[1]);
+        var end = row.value.end && new Date(row.value.end);
+        var elapsed = (end ? end : new Date) - start;
         
         console.log(
-            '%s  %s - %s  (%s)%s',
-            new Date(start).valueOf(), start, end || 'NOW', fmt(elapsed),
+            '%s  %s  [ %s - %s ]  (%s)%s',
+            Math.floor(new Date(start).valueOf() / 1000),
+            strftime('%F', start),
+            strftime('%T', start),
+            end ? strftime('%T', end) : 'NOW',
+            fmt(elapsed),
             (row.value.type ? '  [' + row.value.type + ']' : '')
         );
     });
