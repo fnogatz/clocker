@@ -1,10 +1,10 @@
 {
-  "name": "timetrack",
+  "name": "clocker",
   "version": "0.0.0",
   "description": "track project hours",
   "main": "index.js",
   "bin": {
-    "timetrack": "bin/cmd.js"
+    "clocker": "bin/cmd.js"
   },
   "dependencies": {
     "level": "~0.18.0",
@@ -20,9 +20,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/substack/timetrack.git"
+    "url": "git://github.com/substack/clocker.git"
   },
-  "homepage": "https://github.com/substack/timetrack",
+  "homepage": "https://github.com/substack/clocker",
   "keywords": [
     "consulting",
     "hours",
