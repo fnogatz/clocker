@@ -18,12 +18,11 @@ else if (argv._[0] === 'start') {
     var d = argv.d ? new Date(argv.d) : new Date;
     var type = argv.type || argv.t || 'undefined';
     var pkey = strftime('time!%F %T', d);
-    var tkey = 'time-type!' + type + strftime('!%F %T', d);
+    var tkey = 'time-type!' + type + '!' + strftime('%F %T', d);
     db.batch([
-        { key: pkey, value: { type: type } },
-        { key: tkey, value: 0 }
+        { type: 'put', key: pkey, value: { type: type } },
+        { type: 'put', key: tkey, value: 0 }
     ], error);
-    db.put(key, { type: argv.type || argv.t });
 }
 else if (argv._[0] === 'stop') {
     var d = argv.d ? new Date(argv.d) : new Date;
@@ -33,7 +32,7 @@ else if (argv._[0] === 'stop') {
     });
     s.once('data', function (row) {
         row.value.end = strftime('%F %T', d);
-        db.put(row.key, row, error);
+        db.put(row.key, row.value, error);
     });
 }
 else if (argv._[0] === 'status') {
@@ -64,7 +63,7 @@ else if (argv._[0] === 'list') {
         
         console.log(
             '%s  %s  [ %s - %s ]  (%s)%s',
-            Math.floor(new Date(start).valueOf() / 1000),
+            toKey(start),
             strftime('%F', start),
             strftime('%T', start),
             end ? strftime('%T', end) : 'NOW',
@@ -73,27 +72,57 @@ else if (argv._[0] === 'list') {
         );
     });
 }
-else if (argv._[0] === 'set') {
-    db.put(argv._[1], JSON.parse(argv._[2]), error);
-}
-else if (argv._[0] === 'put') {
-    db.put(argv._[1], JSON.parse(argv._[2]), error);
-}
 else if (argv._[0] === 'get') {
-    db.get(argv._[1], function (err, row) {
-        if (err) {
-            console.error(String(err));
-            process.exit(1);
-        }
-        else console.log(row);
+    var key = getKey(argv._[1]);
+    db.get(key, function (err, row) {
+        if (err) return error(err);
+        console.log(row);
     });
 }
+else if (argv._[0] === 'rm') {
+    var key = getKey(argv._[1]);
+    db.del(key, error);
+}
+else if (argv._[0] === 'adjust') {
+    if (argv._.length < 4) {
+        return error('clocker adjust STAMP {start|end} STAMP');
+    }
+    var key = getKey(argv._[1]);
+    var k = argv._[2];
+    if (k === 'end') {
+        db.get(key, function (err, row) {
+            if (err) return error(err);
+            var value = argv._.slice(3).join(' ');
+            
+            var d = new Date(value);
+            if (isNaN(d.valueOf())) {
+                if (!row[k] || isNaN(row[k])) {
+                    row[k] = key.split('!')[1];
+                }
+                d = new Date(row[k].split(' ')[0] + ' ' + value);
+            }
+            value = strftime('%F %T', d);
+            row[k] = value;
+            db.put(key, row, error);
+        });
+    }
+    else {
+        console.log('todo');
+    }
+}
 else if (argv._[0] === 'move') {
-    db.get(argv._[1], function (err, row) {
-        if (err) error(err);
-        else db.batch([ 
-            { type: 'del', key: argv._[1] },
-            { type: 'put', key: argv._[2], value: row }
+    if (argv._.length < 2) {
+        return error('clocker move STAMP type');
+    }
+    var key = getKey(argv._[1]);
+    var target = argv._[2];
+    db.get(key, function (err, row) {
+        if (err) return error(err);
+        var prevType = row.type;
+        row.type = target;
+        db.batch([ 
+            { type: 'del', key: prevType },
+            { type: 'put', key: key, value: row }
         ], error);
     });
 }
@@ -123,4 +152,12 @@ function error (err) {
     if (!err) return;
     console.error(String(err));
     process.exit(1);
+}
+
+function toKey (s) {
+    return Math.floor(new Date(s).valueOf() / 1000);
+}
+
+function getKey (x) {
+    return strftime('time!%F %T', new Date(x * 1000));
 }
