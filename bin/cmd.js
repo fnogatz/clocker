@@ -107,7 +107,7 @@ else if (argv._[0] === 'data') {
                     hours: Number(sprintf('%.1f', h.hours))
                 };
             })
-        } ], 2, null));
+        } ], null, 2));
     }));
 }
 else if (argv._[0] === 'list') {
