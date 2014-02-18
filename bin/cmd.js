@@ -63,7 +63,7 @@ else if (argv._[0] === 'list') {
         
         console.log(
             '%s  %s  [ %s - %s ]  (%s)%s',
-            toKey(start),
+            toStamp(row.key),
             strftime('%F', start),
             strftime('%T', start),
             end ? strftime('%T', end) : 'NOW',
@@ -89,26 +89,27 @@ else if (argv._[0] === 'adjust') {
     }
     var key = getKey(argv._[1]);
     var k = argv._[2];
+    var value = argv._.slice(3).join(' ');
+    
     if (k === 'end') {
         db.get(key, function (err, row) {
             if (err) return error(err);
-            var value = argv._.slice(3).join(' ');
-            
-            var d = new Date(value);
-            if (isNaN(d.valueOf())) {
-                if (!row[k] || isNaN(row[k])) {
-                    row[k] = key.split('!')[1];
-                }
-                d = new Date(row[k].split(' ')[0] + ' ' + value);
-            }
-            value = strftime('%F %T', d);
-            row[k] = value;
+            row[k] = updateDate(value, row[k]);
             db.put(key, row, error);
         });
     }
-    else {
-        console.log('todo');
+    else if (k === 'start') {
+        db.get(key, function (err, row) {
+            if (err) return error(err);
+            var newKey = 'time!' + updateDate(value, key.split('!')[1]);
+            
+            db.batch([
+                { type: 'put', key: newKey, value: row },
+                { type: 'del', key: key }
+            ], error);
+        });
     }
+    else return error('clocker adjust STAMP {start|end} STAMP');
 }
 else if (argv._[0] === 'move') {
     if (argv._.length < 2) {
@@ -154,10 +155,21 @@ function error (err) {
     process.exit(1);
 }
 
-function toKey (s) {
-    return Math.floor(new Date(s).valueOf() / 1000);
+function toStamp (s) {
+    return Math.floor(new Date(s.split('!')[1]).valueOf() / 1000);
 }
 
 function getKey (x) {
     return strftime('time!%F %T', new Date(x * 1000));
+}
+
+function updateDate (value, old) {
+    var d = new Date(value);
+    if (isNaN(d.valueOf())) {
+        if (!old || isNaN(old)) {
+            old = key.split('!')[1];
+        }
+        d = new Date(old.split(' ')[0] + ' ' + value);
+    }
+    return strftime('%F %T', d);
 }
