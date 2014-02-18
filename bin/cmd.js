@@ -10,7 +10,7 @@ var through = require('through');
 
 var argv = minimist(process.argv.slice(2));
 var HOME = process.env.HOME || process.env.USERDIR;
-var datadir = argv.d || path.join(HOME, '.timetrack');
+var datadir = argv.d || path.join(HOME, '.clocker');
 mkdirp.sync(datadir);
 
 var db = level(path.join(datadir, 'db'), { encoding: 'json' });
