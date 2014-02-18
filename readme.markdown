@@ -2,6 +2,8 @@
 
 track project hours
 
+[![clocker](http://substack.net/images/clocker.png)](http://substack.net/images/clocker.svg)
+
 # example
 
 To start tracking hours, just do `clocker start`:
