@@ -5,6 +5,8 @@ var mkdirp = require('mkdirp');
 var minimist = require('minimist');
 var level = require('level');
 var strftime = require('strftime');
+var sprintf = require('sprintf');
+var through = require('through');
 
 var argv = minimist(process.argv.slice(2));
 var HOME = process.env.HOME || process.env.USERDIR;
@@ -51,10 +53,67 @@ else if (argv._[0] === 'status') {
         }
     });
 }
+else if (argv._[0] === 'data') {
+    var type = argv.type || argv.t || argv._[1];
+    var rate = argv.rate || argv.r || argv._[2];
+    
+    var s = db.createReadStream({ gt: 'time!', lt: 'time!~' });
+    var rows = [];
+    var write = function (row) {
+        if (!type) rows.push(row);
+        if (row.value.type === type) rows.push(row)
+    };
+    s.pipe(through(write, function () {
+        var hours = rows.reduce(function reducer (acc, row) {
+            if (!row.value.end) {
+                console.error("clocked time hasn't ended yet");
+                return process.exit(1);
+            }
+            var start = new Date(row.key.split('!')[1]);
+            var end = new Date(row.value.end);
+            var key = strftime('%F', start);
+            if (key !== strftime('%F', end)) {
+                var nextDay = new Date(start);
+                nextDay.setDate(start.getDate() + 1);
+                nextDay.setHours(0);
+                nextDay.setMinutes(0);
+                nextDay.setSeconds(0);
+                nextDay.setMilliseconds(0);
+                
+                acc = reducer(acc, {
+                    key: 'time!' + strftime('%F %T', nextDay),
+                    value: row.value
+                });
+                end = nextDay;
+            }
+            var hours = (end - start) / 1000 / 60 / 60;
+            if (!acc[key]) {
+                acc[key] = {
+                    date: strftime('%F', start),
+                    hours: 0
+                };
+            }
+            acc[key].hours += hours;
+            return acc;
+        }, {});
+        
+        console.log(JSON.stringify([ {
+            title: 'consulting',
+            rate: rate,
+            hours: Object.keys(hours).map(function (key) {
+                var h = hours[key];
+                return {
+                    date: h.date,
+                    hours: Number(sprintf('%.1f', h.hours))
+                };
+            })
+        } ], 2, null));
+    }));
+}
 else if (argv._[0] === 'list') {
     var s = db.createReadStream({ gt: 'time!', lt: 'time!~' });
     s.on('error', error);
-    s.on('data', function (row) {
+    s.pipe(through(function (row) {
         if (argv.raw) return console.log(JSON.stringify(row));
         
         var start = new Date(row.key.split('!')[1]);
@@ -70,7 +129,7 @@ else if (argv._[0] === 'list') {
             fmt(elapsed),
             (row.value.type ? '  [' + row.value.type + ']' : '')
         );
-    });
+    }));
 }
 else if (argv._[0] === 'get') {
     var key = getKey(argv._[1]);
