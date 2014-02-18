@@ -18,7 +18,7 @@ var db = level(path.join(datadir, 'db'), { encoding: 'json' });
 if (argv.h) usage(0)
 else if (argv._[0] === 'start') {
     var d = argv.d ? new Date(argv.d) : new Date;
-    var type = argv.type || argv.t || 'undefined';
+    var type = argv.type || argv.t;
     var pkey = strftime('time!%F %T', d);
     var tkey = 'time-type!' + type + '!' + strftime('%F %T', d);
     db.batch([
