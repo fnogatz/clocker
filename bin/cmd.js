@@ -42,7 +42,7 @@ else if (argv._[0] === 'status') {
     });
     s.once('data', function (row) {
         var started = new Date(row.key.split('!')[1]);
-        if (!row.value) {
+        if (!row.value.end) {
             var elapsed = (new Date) - started;
             console.log('elapsed time: ' + fmt(elapsed));
         }
