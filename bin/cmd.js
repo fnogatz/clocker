@@ -56,6 +56,7 @@ else if (argv._[0] === 'status') {
 else if (argv._[0] === 'data') {
     var type = argv.type || argv.t || argv._[1];
     var rate = argv.rate || argv.r || argv._[2];
+    var title = argv.title || 'consulting';
     
     var s = db.createReadStream({ gt: 'time!', lt: 'time!~' });
     var rows = [];
@@ -98,7 +99,7 @@ else if (argv._[0] === 'data') {
         }, {});
         
         console.log(JSON.stringify([ {
-            title: 'consulting',
+            title: title,
             rate: rate,
             hours: Object.keys(hours).map(function (key) {
                 var h = hours[key];

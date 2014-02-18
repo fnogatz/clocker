@@ -9,7 +9,7 @@ usage:
   clocker status
     Show the elapsed time if the clock is active or "stopped".
 
-  clocker data {-t TYPE, -r RATE}
+  clocker data {-t TYPE, -r RATE, --title TITLE}
     Generate invoicer-compatible json output.
 
   clocker list
