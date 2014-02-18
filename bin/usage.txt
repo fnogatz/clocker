@@ -1,0 +1,29 @@
+usage:
+
+  clocker start {-t TYPE}
+    Start the clock. Optionally give a TYPE.
+
+  clocker stop
+    Stop the clock.
+
+  clocker status
+    Show the elapsed time if the clock is active or "stopped".
+
+  clocker data {-t TYPE, -r RATE}
+    Generate invoicer-compatible json output.
+
+  clocker list
+    Show hourly data with STAMPS on the leftmost column.
+
+  clocker get STAMP
+    Get the data at STAMP.
+
+  clocker rm STAMP
+    Remove the data at STAMP.
+
+  clocker adjust STAMP {start|end} DATE
+    Adjust the start or end DATE at STAMP.
+
+  clocker move STAMP TYPE
+    Change the TYPE at STAMP.
+

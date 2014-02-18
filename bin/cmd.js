@@ -114,8 +114,6 @@ else if (argv._[0] === 'list') {
     var s = db.createReadStream({ gt: 'time!', lt: 'time!~' });
     s.on('error', error);
     s.pipe(through(function (row) {
-        if (argv.raw) return console.log(JSON.stringify(row));
-        
         var start = new Date(row.key.split('!')[1]);
         var end = row.value.end && new Date(row.value.end);
         var elapsed = (end ? end : new Date) - start;
