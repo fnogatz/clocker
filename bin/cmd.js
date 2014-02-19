@@ -180,9 +180,9 @@ else if (argv._[0] === 'move') {
         var prevType = row.type;
         row.type = target;
         db.batch([ 
-            { type: 'del', key: prevType },
+            prevType && { type: 'del', key: prevType },
             { type: 'put', key: key, value: row }
-        ], error);
+        ].filter(Boolean), error);
     });
 }
 else usage(1)
