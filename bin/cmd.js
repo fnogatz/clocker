@@ -9,7 +9,7 @@ var sprintf = require('sprintf');
 var through = require('through');
 
 var argv = minimist(process.argv.slice(2));
-var HOME = process.env.HOME || process.env.USERDIR || process.env.USERPROFILE;
+var HOME = process.env.HOME || process.env.USERPROFILE;
 var datadir = argv.d || path.join(HOME, '.clocker');
 mkdirp.sync(datadir);
 
