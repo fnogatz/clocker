@@ -141,6 +141,13 @@ else if (argv._[0] === 'rm') {
     var key = getKey(argv._[1]);
     db.del(key, error);
 }
+else if (argv._[0] === 'clear') {
+    var s = db.createReadStream();
+    s.on('error', error);
+    s.pipe(through(function (row) {
+        db.del(row.key, error);
+    }));
+}
 else if (argv._[0] === 'adjust') {
     if (argv._.length < 4) {
         return error('clocker adjust STAMP {start|end} STAMP');

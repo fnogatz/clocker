@@ -90,6 +90,9 @@ usage:
   clocker rm STAMP
     Remove the data at STAMP.
 
+  clocker clear
+    Remove all data.
+
   clocker adjust STAMP {start|end} DATE
     Adjust the start or end DATE at STAMP.
 
