@@ -90,11 +90,8 @@ usage:
   clocker rm STAMP
     Remove the data at STAMP.
 
-  clocker adjust STAMP {start|end} DATE
-    Adjust the start or end DATE at STAMP.
-
-  clocker move STAMP TYPE
-    Change the TYPE at STAMP.
+  clocker set STAMP KEY VALUE
+    Adjust time stamp boundaries or other properties.
 
 ```
 
