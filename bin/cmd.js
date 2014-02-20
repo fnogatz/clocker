@@ -188,7 +188,6 @@ else if (argv._[0] === 'adjust') {
             db.put(key, row, error);
         });
     }
-    else return error('clocker adjust STAMP KEY STAMP');
 }
 else usage(1)
 
