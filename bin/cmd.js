@@ -9,7 +9,7 @@ var sprintf = require('sprintf');
 var through = require('through');
 
 var argv = minimist(process.argv.slice(2), {
-    alias: { m: 'message' }
+    alias: { m: 'message', v: 'verbose' }
 });
 var HOME = process.env.HOME || process.env.USERPROFILE;
 var datadir = argv.d || path.join(HOME, '.clocker');
@@ -131,6 +131,14 @@ else if (argv._[0] === 'list') {
             fmt(elapsed),
             (row.value.type ? '  [' + row.value.type + ']' : '')
         );
+        if (argv.verbose && row.value.message) {
+            var lines = row.value.message.split('\n');
+            console.log();
+            lines.forEach(function (line) {
+                console.log('    ' + line);
+            });
+            console.log();
+        }
     }));
 }
 else if (argv._[0] === 'get') {
