@@ -144,8 +144,8 @@ else if (argv._[0] === 'rm') {
     var key = getKey(argv._[1]);
     db.del(key, error);
 }
-else if (argv._[0] === 'adjust') {
-    if (argv._.length < 4) {
+else if (argv._[0] === 'set') {
+    if (argv._.length < 3) {
         return error('clocker adjust STAMP KEY VALUE');
     }
     var key = getKey(argv._[1]);
@@ -184,7 +184,8 @@ else if (argv._[0] === 'adjust') {
     else {
         db.get(key, function (err, row) {
             if (err) return error(err);
-            row[key] = value;
+            if (value === '') delete row[k];
+            else row[k] = value;
             db.put(key, row, error);
         });
     }
