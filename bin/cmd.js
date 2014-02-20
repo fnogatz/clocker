@@ -8,7 +8,9 @@ var strftime = require('strftime');
 var sprintf = require('sprintf');
 var through = require('through');
 
-var argv = minimist(process.argv.slice(2));
+var argv = minimist(process.argv.slice(2), {
+    alias: { m: 'message' }
+});
 var HOME = process.env.HOME || process.env.USERPROFILE;
 var datadir = argv.d || path.join(HOME, '.clocker');
 mkdirp.sync(datadir);
@@ -33,6 +35,7 @@ else if (argv._[0] === 'stop') {
         limit: 1, reverse: true
     });
     s.once('data', function (row) {
+        if (argv.message) row.value.message = argv.message;
         row.value.end = strftime('%F %T', d);
         db.put(row.key, row.value, error);
     });
@@ -143,7 +146,7 @@ else if (argv._[0] === 'rm') {
 }
 else if (argv._[0] === 'adjust') {
     if (argv._.length < 4) {
-        return error('clocker adjust STAMP {start|end} STAMP');
+        return error('clocker adjust STAMP KEY VALUE');
     }
     var key = getKey(argv._[1]);
     var k = argv._[2];
@@ -167,23 +170,25 @@ else if (argv._[0] === 'adjust') {
             ], error);
         });
     }
-    else return error('clocker adjust STAMP {start|end} STAMP');
-}
-else if (argv._[0] === 'move') {
-    if (argv._.length < 2) {
-        return error('clocker move STAMP type');
+    else if (k === 'type') {
+        db.get(key, function (err, row) {
+            if (err) return error(err);
+            var prevType = row.type;
+            row.type = value;
+            db.batch([ 
+                prevType && { type: 'del', key: prevType },
+                { type: 'put', key: key, value: row }
+            ].filter(Boolean), error);
+        });
     }
-    var key = getKey(argv._[1]);
-    var target = argv._[2];
-    db.get(key, function (err, row) {
-        if (err) return error(err);
-        var prevType = row.type;
-        row.type = target;
-        db.batch([ 
-            prevType && { type: 'del', key: prevType },
-            { type: 'put', key: key, value: row }
-        ].filter(Boolean), error);
-    });
+    else {
+        db.get(key, function (err, row) {
+            if (err) return error(err);
+            row[key] = value;
+            db.put(key, row, error);
+        });
+    }
+    else return error('clocker adjust STAMP KEY STAMP');
 }
 else usage(1)
 
