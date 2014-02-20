@@ -81,8 +81,9 @@ usage:
   clocker data {-t TYPE, -r RATE, --title TITLE}
     Generate invoicer-compatible json output.
 
-  clocker list
+  clocker list {-v}
     Show hourly data with STAMPS on the leftmost column.
+    In verbose mode (-v), also show clocked messages.
 
   clocker get STAMP
     Get the data at STAMP.
