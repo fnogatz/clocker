@@ -1,6 +1,6 @@
 {
   "name": "clocker",
-  "version": "0.1.3",
+  "version": "1.0.0",
   "description": "track project hours",
   "bin": {
     "clocker": "bin/cmd.js"
