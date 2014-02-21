@@ -94,6 +94,10 @@ usage:
   clocker set STAMP KEY VALUE
     Adjust time stamp boundaries or other properties.
 
+  clocker edit STAMP {KEY}
+    Launch $EDITOR to edit the record at STAMP.
+    Optionally edit a single KEY.
+
 ```
 
 # install
