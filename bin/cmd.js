@@ -240,14 +240,14 @@ function set (stamp, prop, value, originalValue) {
     if (prop === 'end') {
         db.get(prop, function (err, row) {
             if (err) return error(err);
-            row[prop] = updateDate(value, originalValue || row[prop]);
+            row[prop] = updateDate(key, value, originalValue || row[prop]);
             db.put(key, row, error);
         });
     }
     else if (prop === 'start') {
         db.get(key, function (err, row) {
             if (err) return error(err);
-            var newKey = 'time!' + updateDate(value, key.split('!')[1]);
+            var newKey = 'time!' + updateDate(key, value, key.split('!')[1]);
             
             db.batch([
                 { type: 'put', key: newKey, value: row },
@@ -290,7 +290,7 @@ function getKey (x) {
     return strftime('time!%F %T', new Date(x * 1000));
 }
 
-function updateDate (value, old) {
+function updateDate (key, value, old) {
     var d = new Date(value);
     if (isNaN(d.valueOf())) {
         if (!old || isNaN(old)) {
