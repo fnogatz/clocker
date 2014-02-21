@@ -7,6 +7,9 @@ var level = require('level');
 var strftime = require('strftime');
 var sprintf = require('sprintf');
 var through = require('through');
+var editor = require('editor');
+var os = require('os');
+var tmpdir = (os.tmpdir || os.tmpDir)();
 
 var argv = minimist(process.argv.slice(2), {
     alias: { m: 'message', v: 'verbose' }
@@ -198,7 +201,41 @@ else if (argv._[0] === 'set') {
         });
     }
 }
+else if (argv._[0] === 'edit') {
+    var key = getKey(argv._[1]);
+    var prop = argv._[2];
+    
+    db.get(key, function (err, row) {
+        if (err) return error(err);
+        if (prop) {
+            edit(row[prop], function (err, src) {
+                if (err) return error(src);
+                row[prop] = src;
+                console.log('SET', key, prop, src);
+                //set(prop, src);
+            });
+        }
+        else {
+        }
+    });
+}
 else usage(1)
+
+function edit (src, cb) {
+    var file = path.join(tmpdir, 'clocker-' + Math.random());
+    fs.writeFile(file, src || '', function (err) {
+        if (err) error(err)
+        else editor(file, function (code, sig) {
+            if (code !== 0) {
+                return error('non-zero exit code from $EDITOR');
+            }
+            fs.readFile(file, function (err, src) {
+                if (err) error(err)
+                else cb(src)
+            });
+        });
+    });
+}
 
 function usage (code) {
     var rs = fs.createReadStream(__dirname + '/usage.txt');
