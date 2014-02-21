@@ -238,7 +238,7 @@ function set (stamp, prop, value, originalValue) {
     var key = getKey(stamp);
     
     if (prop === 'end') {
-        db.get(prop, function (err, row) {
+        db.get(key, function (err, row) {
             if (err) return error(err);
             row[prop] = updateDate(key, value, originalValue || row[prop]);
             db.put(key, row, error);
