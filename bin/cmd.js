@@ -157,66 +157,43 @@ else if (argv._[0] === 'rm') {
 }
 else if (argv._[0] === 'set') {
     if (argv._.length < 3) {
-        return error('clocker adjust STAMP KEY VALUE');
+        return error('clocker set STAMP KEY VALUE');
     }
-    var key = getKey(argv._[1]);
-    var k = argv._[2];
-    var value = argv._.slice(3).join(' ');
     
-    if (k === 'end') {
-        db.get(key, function (err, row) {
-            if (err) return error(err);
-            row[k] = updateDate(value, row[k]);
-            db.put(key, row, error);
-        });
-    }
-    else if (k === 'start') {
-        db.get(key, function (err, row) {
-            if (err) return error(err);
-            var newKey = 'time!' + updateDate(value, key.split('!')[1]);
-            
-            db.batch([
-                { type: 'put', key: newKey, value: row },
-                { type: 'del', key: key }
-            ], error);
-        });
-    }
-    else if (k === 'type') {
-        db.get(key, function (err, row) {
-            if (err) return error(err);
-            var prevType = row.type;
-            row.type = value;
-            db.batch([ 
-                prevType && { type: 'del', key: prevType },
-                { type: 'put', key: key, value: row }
-            ].filter(Boolean), error);
-        });
-    }
-    else {
-        db.get(key, function (err, row) {
-            if (err) return error(err);
-            if (value === '') delete row[k];
-            else row[k] = value;
-            db.put(key, row, error);
-        });
-    }
+    var stamp = argv._[1];
+    var prop = argv._[2];
+    var value = argv._.slice(3).join(' ');
+    set(stamp, prop, value);
 }
 else if (argv._[0] === 'edit') {
-    var key = getKey(argv._[1]);
+    var stamp = argv._[1];
+    var key = getKey(stamp);
     var prop = argv._[2];
     
     db.get(key, function (err, row) {
         if (err) return error(err);
-        if (prop) {
-            edit(row[prop], function (err, src) {
-                if (err) return error(src);
-                row[prop] = src;
-                console.log('SET', key, prop, src);
-                //set(prop, src);
+        var src = JSON.stringify(prop ? row[prop] : row, null, 2);
+        edit(src, function (err, src_) {
+            if (err) return error(err);
+            if (prop) {
+                row[prop] = src_;
+                return set(stamp, prop, row);
+            }
+            row = JSON.parse(src_);
+            try { var x = JSON.parse(src_) }
+            catch (err) {
+                return error('error parsing json');
+            }
+            db.put(key, x, function (err) {
+                if (err) return error(err);
+                if (!x || typeof x !== 'object') {
+                    return error('not an object: ' + x);
+                }
+                if (x.type !== row.type) {
+                    set(stamp, 'type', x.type, row.type);
+                }
             });
-        }
-        else {
-        }
+        });
     });
 }
 else usage(1)
@@ -231,7 +208,7 @@ function edit (src, cb) {
             }
             fs.readFile(file, function (err, src) {
                 if (err) error(err)
-                else cb(src)
+                else cb(null, src)
             });
         });
     });
@@ -255,6 +232,48 @@ function fmt (elapsed) {
     var mm = pad(Math.floor(n / 60 % 60), 2);
     var ss = pad(Math.floor(n % 60), 2);
     return [ hh, mm, ss ].join(':');
+}
+
+function set (stamp, prop, value, originalValue) {
+    var key = getKey(stamp);
+    
+    if (prop === 'end') {
+        db.get(prop, function (err, row) {
+            if (err) return error(err);
+            row[prop] = updateDate(value, originalValue || row[prop]);
+            db.put(key, row, error);
+        });
+    }
+    else if (prop === 'start') {
+        db.get(key, function (err, row) {
+            if (err) return error(err);
+            var newKey = 'time!' + updateDate(value, key.split('!')[1]);
+            
+            db.batch([
+                { type: 'put', key: newKey, value: row },
+                { type: 'del', key: key }
+            ], error);
+        });
+    }
+    else if (prop === 'type') {
+        db.get(key, function (err, row) {
+            if (err) return error(err);
+            var prevType = originalValue || row.type;
+            row.type = value;
+            db.batch([ 
+                prevType && { type: 'del', key: prevType },
+                { type: 'put', key: key, value: row }
+            ].filter(Boolean), error);
+        });
+    }
+    else {
+        db.get(key, function (err, row) {
+            if (err) return error(err);
+            if (value === '') delete row[prop];
+            else row[prop] = value;
+            db.put(key, row, error);
+        });
+    }
 }
 
 function error (err) {
