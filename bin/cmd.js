@@ -12,7 +12,7 @@ var os = require('os');
 var tmpdir = (os.tmpdir || os.tmpDir)();
 
 var argv = minimist(process.argv.slice(2), {
-    alias: { m: 'message', v: 'verbose' }
+    alias: { m: 'message', v: 'verbose', a: 'archive', t: 'type' }
 });
 var HOME = process.env.HOME || process.env.USERPROFILE;
 var datadir = argv.d || path.join(HOME, '.clocker');
@@ -121,18 +121,22 @@ else if (argv._[0] === 'list') {
     var s = db.createReadStream({ gt: 'time!', lt: 'time!~' });
     s.on('error', error);
     s.pipe(through(function (row) {
+        if (row.value.archive && !argv.archive) return;
+        if (argv.type && row.value.type !== argv.type) return;
+        
         var start = new Date(row.key.split('!')[1]);
         var end = row.value.end && new Date(row.value.end);
         var elapsed = (end ? end : new Date) - start;
         
         console.log(
-            '%s  %s  [ %s - %s ]  (%s)%s',
+            '%s  %s  [ %s - %s ]  (%s)%s%s',
             toStamp(row.key),
             strftime('%F', start),
             strftime('%T', start),
             end ? strftime('%T', end) : 'NOW',
             fmt(elapsed),
-            (row.value.type ? '  [' + row.value.type + ']' : '')
+            (row.value.type ? '  [' + row.value.type + ']' : ''),
+            (row.value.archive ? ' A' : '')
         );
         if (argv.verbose && row.value.message) {
             var lines = row.value.message.split('\n');
