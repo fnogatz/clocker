@@ -200,6 +200,23 @@ else if (argv._[0] === 'edit') {
         });
     });
 }
+else if (argv._[0] === 'archive' || argv._[0] === 'unarchive') {
+    var value = argv._[0] === 'archive';
+    if (argv._.length > 1) {
+        return argv._.slice(1).forEach(function (stamp) {
+            set(stamp, 'archive', value);
+        });
+    }
+    var s = db.createReadStream({ gt: 'time!', lt: 'time!~' });
+    s.on('error', error);
+    s.pipe(through(function (row) {
+        if (row.value.archive) return;
+        if (argv.type && row.value.type !== argv.type) return;
+        
+        row.value.archive = value;
+        db.put(row.key, row.value, error);
+    }));
+}
 else usage(1)
 
 function edit (src, cb) {
