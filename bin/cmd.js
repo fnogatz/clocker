@@ -64,7 +64,10 @@ else if (argv._[0] === 'data') {
     var rate = argv.rate || argv.r || argv._[2];
     var title = argv.title || 'consulting';
     
-    var s = db.createReadStream({ gt: 'time!', lt: 'time!~' });
+    var s = db.createReadStream({
+        gt: 'time!' + (argv.gt || ''),
+        lt: 'time!' + (argv.lt || '~')
+    });
     var rows = [];
     var write = function (row) {
         if (row.value.archive && !argv.archive) return;
@@ -119,7 +122,10 @@ else if (argv._[0] === 'data') {
     }));
 }
 else if (argv._[0] === 'list') {
-    var s = db.createReadStream({ gt: 'time!', lt: 'time!~' });
+    var s = db.createReadStream({
+        gt: 'time!' + (argv.gt || ''),
+        lt: 'time!' + (argv.lt || '~')
+    });
     s.on('error', error);
     s.pipe(through(function (row) {
         if (row.value.archive && !argv.archive) return;
