@@ -214,7 +214,10 @@ else if (argv._[0] === 'archive' || argv._[0] === 'unarchive') {
             set(stamp, 'archive', value);
         });
     }
-    var s = db.createReadStream({ gt: 'time!', lt: 'time!~' });
+    var s = db.createReadStream({
+        gt: 'time!' + (argv.gt || ''),
+        lt: 'time!' + (argv.lt || '~')
+    });
     s.on('error', error);
     s.pipe(through(function (row) {
         if (row.value.archive) return;
