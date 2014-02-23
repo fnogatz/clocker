@@ -67,6 +67,7 @@ else if (argv._[0] === 'data') {
     var s = db.createReadStream({ gt: 'time!', lt: 'time!~' });
     var rows = [];
     var write = function (row) {
+        if (row.value.archive && !argv.archive) return;
         if (!type) rows.push(row);
         if (row.value.type === type) rows.push(row)
     };
