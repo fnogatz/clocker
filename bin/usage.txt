@@ -9,12 +9,14 @@ usage:
   clocker status
     Show the elapsed time if the clock is active or "stopped".
 
-  clocker data {-t TYPE, -r RATE, --title TITLE}
+  clocker data {-t TYPE, -r RATE, --title TITLE, --gt=DATE, --lt=DATE, -a}
     Generate invoicer-compatible json output.
+    Show dates between lt and gt. Show archived dates with -a.
 
-  clocker list {-v}
+  clocker list {-v, --gt DATE, --lt DATE, -a}
     Show hourly data with STAMPS on the leftmost column.
     In verbose mode (-v), also show clocked messages.
+    Show dates between lt and gt. Show archived dates with -a.
 
   clocker get STAMP
     Get the data at STAMP.
@@ -29,3 +31,10 @@ usage:
     Launch $EDITOR to edit the record at STAMP.
     Optionally edit a single KEY.
 
+  clocker archive {--lt=DATE, --gt=DATE}
+  clocker archive [STAMP...]
+    Archive a range of clocked records or a list of STAMPs.
+ 
+  clocker unarchive {--lt=DATE, --gt=DATE}
+  clocker unarchive [STAMP...]
+    Un-archive a range of clocked records or a list of STAMPs.
