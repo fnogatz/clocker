@@ -128,6 +128,7 @@ else if (argv._[0] === 'list') {
     });
     s.on('error', error);
     s.pipe(through(function (row) {
+        if (argv.raw) return console.log(row);
         if (row.value.archive && !argv.archive) return;
         if (argv.type && row.value.type !== argv.type) return;
         
@@ -205,6 +206,12 @@ else if (argv._[0] === 'edit') {
                 }
             });
         });
+    });
+}
+else if (argv._[0] === 'insert') {
+    var key = getKey(argv._[1]);
+    db.put(key, {}, function (err) {
+        if (err) return error(err);
     });
 }
 else if (argv._[0] === 'archive' || argv._[0] === 'unarchive') {
@@ -318,6 +325,7 @@ function toStamp (s) {
 }
 
 function getKey (x) {
+    if (!/^\d+$/.test(x)) return 'time!' + x;
     return strftime('time!%F %T', new Date(x * 1000));
 }
 
