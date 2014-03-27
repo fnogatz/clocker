@@ -22,7 +22,7 @@ var db = level(path.join(datadir, 'db'), { encoding: 'json' });
 
 if (argv.h) usage(0)
 else if (argv._[0] === 'start') {
-    var d = argv.d ? new Date(argv.d) : new Date;
+    var d = argv.date ? new Date(argv.date) : new Date;
     var type = argv.type || argv.t;
     var pkey = strftime('time!%F %T', d);
     var tkey = 'time-type!' + type + '!' + strftime('%F %T', d);
@@ -32,16 +32,25 @@ else if (argv._[0] === 'start') {
     ], error);
 }
 else if (argv._[0] === 'stop') {
-    var d = argv.d ? new Date(argv.d) : new Date;
-    var s = db.createReadStream({
-        gt: 'time!', lt: 'time!~',
-        limit: 1, reverse: true
-    });
-    s.once('data', function (row) {
+    var d = argv.date ? new Date(argv.date) : new Date;
+    if (argv.s) {
+        var key = 'time!' + strftime('%F %T', new Date(argv.s));
+        db.get(key, function (err, value) {
+            if (err) error(err)
+            else onrow({ key: key, value: value })
+        });
+    }
+    else {
+        db.createReadStream({
+            gt: 'time!', lt: 'time!~',
+            limit: 1, reverse: true
+        }).once('data', onrow);
+    }
+    function onrow (row) {
         if (argv.message) row.value.message = argv.message;
         row.value.end = strftime('%F %T', d);
         db.put(row.key, row.value, error);
-    });
+    }
 }
 else if (argv._[0] === 'status') {
     var s = db.createReadStream({
