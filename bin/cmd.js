@@ -53,6 +53,20 @@ else if (argv._[0] === 'stop') {
         db.put(row.key, row.value, error);
     }
 }
+else if (argv._[0] === 'add' && argv._.length === 3) {
+    var start = strftime('%F %T', new Date(argv._[1]));
+    var end = strftime('%F %T', new Date(argv._[2]));
+    var type = argv.type || argv.t;
+    
+    var value = { type: type, end: end };
+    var pkey = 'time!' + start;
+    var tkey = 'time-type!' + type + '!' + start;
+    
+    db.batch([
+        { type: 'put', key: pkey, value: value },
+        { type: 'put', key: tkey, value: 0 }
+    ], error);
+}
 else if (argv._[0] === 'status') {
     var s = db.createReadStream({
         gt: 'time!', lt: 'time!~',
