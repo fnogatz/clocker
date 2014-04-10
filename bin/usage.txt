@@ -18,6 +18,9 @@ usage:
     In verbose mode (-v), also show clocked messages.
     Show dates between lt and gt. Show archived dates with -a.
 
+  clocker add START END {-t TYPE}
+    Add a hours from START to END as date strings.
+
   clocker get STAMP
     Get the data at STAMP.
 
