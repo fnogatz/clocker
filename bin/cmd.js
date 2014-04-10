@@ -100,12 +100,8 @@ else if (argv._[0] === 'data') {
     };
     s.pipe(through(write, function () {
         var hours = rows.reduce(function reducer (acc, row) {
-            if (!row.value.end) {
-                console.error("clocked time hasn't ended yet");
-                return process.exit(1);
-            }
             var start = new Date(row.key.split('!')[1]);
-            var end = new Date(row.value.end);
+            var end = row.value.end ? new Date(row.value.end) : new Date;
             var key = strftime('%F', start);
             if (key !== strftime('%F', end)) {
                 var nextDay = new Date(start);
