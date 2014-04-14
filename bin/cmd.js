@@ -23,8 +23,8 @@ var db = level(path.join(datadir, 'db'), { encoding: 'json' });
 if (argv.h) usage(0)
 else if (argv._[0] === 'start') {
     var d = argv.date ? new Date(argv.date) : new Date;
-    var type = argv.type || argv.t;
     var message = argv.message;
+    var type = argv.type;
     var pkey = strftime('time!%F %T', d);
     var tkey = 'time-type!' + type + '!' + strftime('%F %T', d);
     db.batch([
@@ -61,8 +61,8 @@ else if (argv._[0] === 'stop') {
 else if (argv._[0] === 'add' && argv._.length === 3) {
     var start = strftime('%F %T', new Date(argv._[1]));
     var end = strftime('%F %T', new Date(argv._[2]));
-    var type = argv.type || argv.t;
     var message = argv.message;
+    var type = argv.type;
     
     var value = { type: type, message: message, end: end };
     var pkey = 'time!' + start;
@@ -90,7 +90,7 @@ else if (argv._[0] === 'status') {
     });
 }
 else if (argv._[0] === 'data') {
-    var type = argv.type || argv.t || argv._[1];
+    var type = argv.type || argv._[1];
     var rate = argv.rate || argv.r || argv._[2];
     var title = argv.title || 'consulting';
     
