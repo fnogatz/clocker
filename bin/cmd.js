@@ -24,10 +24,11 @@ if (argv.h) usage(0)
 else if (argv._[0] === 'start') {
     var d = argv.date ? new Date(argv.date) : new Date;
     var type = argv.type || argv.t;
+    var message = argv.message;
     var pkey = strftime('time!%F %T', d);
     var tkey = 'time-type!' + type + '!' + strftime('%F %T', d);
     db.batch([
-        { type: 'put', key: pkey, value: { type: type } },
+        { type: 'put', key: pkey, value: { type: type, message: message } },
         { type: 'put', key: tkey, value: 0 }
     ], error);
 }
@@ -57,8 +58,9 @@ else if (argv._[0] === 'add' && argv._.length === 3) {
     var start = strftime('%F %T', new Date(argv._[1]));
     var end = strftime('%F %T', new Date(argv._[2]));
     var type = argv.type || argv.t;
+    var message = argv.message;
     
-    var value = { type: type, end: end };
+    var value = { type: type, message: message, end: end };
     var pkey = 'time!' + start;
     var tkey = 'time-type!' + type + '!' + start;
     
