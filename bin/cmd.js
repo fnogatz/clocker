@@ -49,7 +49,11 @@ else if (argv._[0] === 'stop') {
         }).once('data', onrow);
     }
     function onrow (row) {
-        if (argv.message) row.value.message = argv.message;
+        var m = argv.message;
+        if (m) {
+            if (row.value.message) m = row.value.message + '\n' + m;
+            row.value.message = m;
+        }
         row.value.end = strftime('%F %T', d);
         db.put(row.key, row.value, error);
     }
