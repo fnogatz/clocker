@@ -69,10 +69,10 @@ $ clocker data BAZCORP --rate 125 | invoicer -r BAZCORP -o invoice.pdf
 ```
 usage:
 
-  clocker start {-t TYPE}
-    Start the clock. Optionally give a TYPE.
+  clocker start {-t TYPE, -m MESSAGE}
+    Start the clock. Optionally give a TYPE and MESSAGE.
 
-  clocker stop
+  clocker stop {-m MESSAGE}
     Stop the clock.
 
   clocker status
@@ -87,7 +87,7 @@ usage:
     In verbose mode (-v), also show clocked messages.
     Show dates between lt and gt. Show archived dates with -a.
 
-  clocker add START END {-t TYPE}
+  clocker add START END {-t TYPE, -m MESSAGE}
     Add a hours from START to END as date strings.
 
   clocker get STAMP
