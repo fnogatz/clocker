@@ -156,7 +156,7 @@ else if (argv._[0] === 'data') {
                 var h = hours[key];
                 return {
                     date: h.date,
-                    hours: Number(sprintf('%.1f', h.hours))
+                    hours: Number(sprintf('%.2f', h.hours))
                 };
             })
         } ], { space: 2 }));
