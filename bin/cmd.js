@@ -154,7 +154,7 @@ else if (argv._[0] === 'list') {
     });
     s.on('error', error);
     s.pipe(through(function (row) {
-        if (argv.raw) return console.log(row);
+        if (argv.raw) return console.log(JSON.stringify(row));
         if (row.value.archive && !argv.archive) return;
         if (argv.type && row.value.type !== argv.type) return;
         
