@@ -8,6 +8,7 @@ var strftime = require('strftime');
 var sprintf = require('sprintf');
 var through = require('through');
 var editor = require('editor');
+var stringify = require('json-stable-stringify');
 var os = require('os');
 var tmpdir = (os.tmpdir || os.tmpDir)();
 
@@ -134,7 +135,7 @@ else if (argv._[0] === 'data') {
             return acc;
         }, {});
         
-        console.log(JSON.stringify([ {
+        console.log(stringify([ {
             title: title,
             rate: rate,
             hours: Object.keys(hours).map(function (key) {
@@ -144,7 +145,7 @@ else if (argv._[0] === 'data') {
                     hours: Number(sprintf('%.1f', h.hours))
                 };
             })
-        } ], null, 2));
+        } ], { space: 2 }));
     }));
 }
 else if (argv._[0] === 'list') {
@@ -154,7 +155,7 @@ else if (argv._[0] === 'list') {
     });
     s.on('error', error);
     s.pipe(through(function (row) {
-        if (argv.raw) return console.log(JSON.stringify(row));
+        if (argv.raw) return console.log(stringify(row));
         if (row.value.archive && !argv.archive) return;
         if (argv.type && row.value.type !== argv.type) return;
         
@@ -210,7 +211,7 @@ else if (argv._[0] === 'edit') {
     
     db.get(key, function (err, row) {
         if (err) return error(err);
-        var src = JSON.stringify(prop ? row[prop] : row, null, 2);
+        var src = stringify(prop ? row[prop] : row, { space: 2 });
         edit(src, function (err, src_) {
             if (err) return error(err);
             if (prop) {
