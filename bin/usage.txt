@@ -24,7 +24,7 @@ usage:
   clocker get STAMP
     Get the data at STAMP.
 
-  clocker rm STAMP
+  clocker rm STAMP...
     Remove the data at STAMP.
 
   clocker set STAMP KEY VALUE
