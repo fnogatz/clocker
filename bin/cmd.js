@@ -26,12 +26,7 @@ else if (argv._[0] === 'start') {
     var d = argv.date ? new Date(argv.date) : new Date;
     var message = argv.message;
     var type = argv.type;
-    var pkey = strftime('time!%F %T', d);
-    var tkey = 'time-type!' + type + '!' + strftime('%F %T', d);
-    db.batch([
-        { type: 'put', key: pkey, value: { type: type, message: message } },
-        { type: 'put', key: tkey, value: 0 }
-    ], error);
+    start(d, message, type, error);
 }
 else if (argv._[0] === 'stop') {
     var d = argv.date ? new Date(argv.date) : new Date;
@@ -40,16 +35,16 @@ else if (argv._[0] === 'stop') {
         key = getKey(key);
         db.get(key, function (err, value) {
             if (err) error(err)
-            else onrow({ key: key, value: value })
+            else onrowstop({ key: key, value: value })
         });
     }
     else {
         db.createReadStream({
             gt: 'time!', lt: 'time!~',
             limit: 1, reverse: true
-        }).once('data', onrow);
+        }).once('data', onrowstop);
     }
-    function onrow (row) {
+    function onrowstop (row) {
         var m = argv.message;
         if (m) {
             if (row.value.message) m = row.value.message + '\n' + m;
@@ -57,6 +52,25 @@ else if (argv._[0] === 'stop') {
         }
         row.value.end = strftime('%F %T', d);
         db.put(row.key, row.value, error);
+    }
+}
+else if (argv._[0] === 'restart') {
+    var k = argv.key || argv._[1];
+    if (k) {
+        db.get(getKey(k), function (err, value) {
+            if (err) error(err);
+            else onrowrestart({ value: value });
+        });
+    }
+    else {
+        db.createReadStream({
+            gt: 'time!', lt: 'time!~',
+            limit: 1, reverse: true
+        }).once('data', onrowrestart);
+    }
+
+    function onrowrestart (row) {
+        start(new Date, row.value.message, row.value.type, error);
     }
 }
 else if (argv._[0] === 'add' && argv._.length === 3) {
@@ -264,6 +278,15 @@ else if (argv._[0] === 'archive' || argv._[0] === 'unarchive') {
     }));
 }
 else usage(1)
+
+function start (date, message, type, cb) {
+    var pkey = strftime('time!%F %T', d);
+    var tkey = 'time-type!' + type + '!' + strftime('%F %T', d);
+    db.batch([
+        { type: 'put', key: pkey, value: { type: type, message: message } },
+        { type: 'put', key: tkey, value: 0 }
+    ], cb);
+}
 
 function edit (src, cb) {
     var file = path.join(tmpdir, 'clocker-' + Math.random());
