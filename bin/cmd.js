@@ -106,6 +106,7 @@ else if (argv._[0] === 'status') {
 }
 else if (argv._[0] === 'data') {
     var type = argv.type || argv._[1];
+    var typeIsRegExp = isRegExp(type);
     var rate = argv.rate || argv.r || argv._[2];
     var title = argv.title || 'consulting';
     
@@ -118,6 +119,7 @@ else if (argv._[0] === 'data') {
         if (row.value.archive && !argv.archive) return;
         if (!type) rows.push(row);
         if (row.value.type === type) rows.push(row)
+        if (typeIsRegExp && testRegExp(type, row.value.type)) rows.push(row)
     };
     s.pipe(through(write, function () {
         var hours = rows.reduce(function reducer (acc, row) {
@@ -171,7 +173,9 @@ else if (argv._[0] === 'list') {
     s.pipe(through(function (row) {
         if (argv.raw) return console.log(stringify(row));
         if (row.value.archive && !argv.archive) return;
-        if (argv.type && row.value.type !== argv.type) return;
+        if (argv.type && !isRegExp(argv.type) && row.value.type !== argv.type) return;
+        if (argv.type && isRegExp(argv.type) && !testRegExp(argv.type, row.value.type)) return;
+
         
         var start = new Date(row.key.split('!')[1]);
         var end = row.value.end && new Date(row.value.end);
@@ -390,4 +394,12 @@ function updateDate (key, value, old) {
         d = new Date(old.split(' ')[0] + ' ' + value);
     }
     return strftime('%F %T', d);
+}
+
+function isRegExp (str) {
+    return /^\/.*\/$/.test(str);
+}
+
+function testRegExp (re, str) {
+    return RegExp(re.slice(1,-1)).test(str);
 }
