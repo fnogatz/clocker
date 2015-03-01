@@ -162,6 +162,35 @@ else if (argv._[0] === 'data') {
         } ], { space: 2 }));
     }));
 }
+else if (argv._[0] === 'csv') {
+    // print header
+    console.log('Key,Date,Start,End,Duration,Archived,Type,Message');
+
+    var s = db.createReadStream({
+        gt: 'time!' + (argv.gt || ''),
+        lt: 'time!' + (argv.lt || '~')
+    });
+    s.on('error', error);
+    s.pipe(through(function (row) {
+        if (row.value.archive && !argv.archive) return;
+        if (argv.type && row.value.type !== argv.type) return;
+        
+        var start = new Date(row.key.split('!')[1]);
+        var end = row.value.end && new Date(row.value.end);
+        var elapsed = (end ? end : new Date) - start;
+        
+        console.log('%s,%s,%s,%s,%s,%s,"%s","%s"',
+            toStamp(row.key),
+            strftime('%F', start),
+            strftime('%T', start),
+            end ? strftime('%T', end) : 'NOW',
+            fmt(elapsed),
+            (row.value.archive ? 'A' : ''),
+            (row.value.type || '').replace('"', '""'),
+            (row.value.message || '').replace('"', '""')
+        );
+    }));
+}
 else if (argv._[0] === 'list') {
     var s = db.createReadStream({
         gt: 'time!' + (argv.gt || ''),
