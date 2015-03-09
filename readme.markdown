@@ -75,17 +75,22 @@ usage:
   clocker stop {-m MESSAGE}
     Stop the clock.
 
+  clocker restart [STAMP]
+    Restart either last clock or clock at STAMP.
+
   clocker status
     Show the elapsed time if the clock is active or "stopped".
 
   clocker data {-t TYPE, -r RATE, --title TITLE, --gt=DATE, --lt=DATE, -a}
     Generate invoicer-compatible json output.
     Show dates between lt and gt. Show archived dates with -a.
+    Optionally filter by TYPE, a string or /regex/.
 
-  clocker list {-v, --gt DATE, --lt DATE, -a}
+  clocker list {-v, --gt DATE, --lt DATE, -a, -t TYPE}
     Show hourly data with STAMPS on the leftmost column.
     In verbose mode (-v), also show clocked messages.
     Show dates between lt and gt. Show archived dates with -a.
+    Optionally filter by TYPE, a string or /regex/.
 
   clocker add START END {-t TYPE, -m MESSAGE}
     Add a hours from START to END as date strings.
@@ -93,7 +98,7 @@ usage:
   clocker get STAMP
     Get the data at STAMP.
 
-  clocker rm STAMP
+  clocker rm STAMP...
     Remove the data at STAMP.
 
   clocker set STAMP KEY VALUE
