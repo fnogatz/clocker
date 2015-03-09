@@ -63,10 +63,7 @@ else if (argv._[0] === 'restart') {
         });
     }
     else {
-        db.createReadStream({
-            gt: 'time!', lt: 'time!~',
-            limit: 1, reverse: true
-        }).once('data', onrowrestart);
+        getLastRow(onrowrestart);
     }
 
     function onrowrestart (row) {
@@ -215,14 +212,27 @@ else if (argv._[0] === 'rm') {
     });
 }
 else if (argv._[0] === 'set') {
+    var stamp;
+    var prop;
+    var value;
+
     if (argv._.length < 3) {
-        return error('clocker set STAMP KEY VALUE');
+        return error('clocker set [STAMP] KEY VALUE');
     }
-    
-    var stamp = argv._[1];
-    var prop = argv._[2];
-    var value = argv._.slice(3).join(' ');
-    set(stamp, prop, value);
+    else if (argv._.length === 3) {
+        getLastRow(function (row) {
+            stamp = row.key.split('!')[1];
+            prop = argv._[1];
+            value = argv._.slice(2).join(' ');
+            set(stamp, prop, value);
+        });
+    }
+    else {
+        stamp = argv._[1];
+        prop = argv._[2];
+        value = argv._.slice(3).join(' ');
+        set(stamp, prop, value);
+    }
 }
 else if (argv._[0] === 'edit') {
     var stamp = argv._[1];
@@ -383,6 +393,13 @@ function toStamp (s) {
 function getKey (x) {
     if (!/^\d+$/.test(x)) return 'time!' + x;
     return strftime('time!%F %T', new Date(x * 1000));
+}
+
+function getLastRow (callback) {
+    db.createReadStream({
+        gt: 'time!', lt: 'time!~',
+        limit: 1, reverse: true
+    }).once('data', callback);
 }
 
 function updateDate (key, value, old) {
