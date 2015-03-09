@@ -101,8 +101,9 @@ usage:
   clocker rm STAMP...
     Remove the data at STAMP.
 
-  clocker set STAMP KEY VALUE
-    Adjust time stamp boundaries or other properties.
+  clocker set [STAMP] KEY VALUE
+    Adjust time stamp boundaries or other properties of either last clock
+    or clock at STAMP.
 
   clocker edit STAMP {KEY}
     Launch $EDITOR to edit the record at STAMP.
