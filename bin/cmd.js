@@ -369,6 +369,11 @@ function fmt (elapsed) {
 
 function set (stamp, prop, value, originalValue) {
     var key = getKey(stamp);
+
+    if (prop === 'stop') {
+        // Use 'stop' as synonym for 'end'
+        prop = 'end';
+    }
     
     if (prop === 'end') {
         db.get(key, function (err, row) {
