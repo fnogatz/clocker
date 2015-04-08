@@ -172,7 +172,8 @@ else if (argv._[0] === 'csv') {
     s.on('error', error);
     s.pipe(through(function (row) {
         if (row.value.archive && !argv.archive) return;
-        if (argv.type && row.value.type !== argv.type) return;
+        if (argv.type && !isRegExp(argv.type) && row.value.type !== argv.type) return;
+        if (argv.type && isRegExp(argv.type) && !testRegExp(argv.type, row.value.type)) return;
         
         var start = new Date(row.key.split('!')[1]);
         var end = row.value.end && new Date(row.value.end);
