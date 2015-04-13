@@ -191,7 +191,7 @@ else if (argv._[0] === 'csv') {
         );
     }));
 }
-else if (argv._[0] === 'list') {
+else if (argv._[0] === 'list' || argv._[0] === 'ls') {
     var s = db.createReadStream({
         gt: 'time!' + (argv.gt || ''),
         lt: 'time!' + (argv.lt || '~')
