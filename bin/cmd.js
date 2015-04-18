@@ -90,15 +90,16 @@ else if (argv._[0] === 'status') {
         gt: 'time!', lt: 'time!~',
         limit: 1, reverse: true
     });
+    var status = 'stopped';
     s.once('data', function (row) {
         var started = new Date(row.key.split('!')[1]);
         if (!row.value.end) {
             var elapsed = (new Date) - started;
-            console.log('elapsed time: ' + fmt(elapsed));
+            status = 'elapsed time: ' + fmt(elapsed);
         }
-        else {
-            console.log('stopped');
-        }
+    });
+    s.once('end', function () {
+        console.log(status);
     });
 }
 else if (argv._[0] === 'data') {
