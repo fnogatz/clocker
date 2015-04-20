@@ -1,19 +1,18 @@
 {
   "name": "clocker",
-  "version": "1.10.3",
+  "version": "1.10.4",
   "description": "track project hours",
   "bin": {
     "clocker": "bin/cmd.js"
   },
   "dependencies": {
-    "editor": "~0.1.0",
+    "editor": "^0.1.0",
     "json-stable-stringify": "^1.0.0",
     "level": "~0.18.0",
-    "minimist": "~0.0.7",
-    "mkdirp": "~0.3.5",
-    "sprintf": "~0.1.3",
+    "minimist": "0.0.10",
+    "mkdirp": "^0.3.5",
     "strftime": "~0.6.2",
-    "through": "~2.3.4"
+    "through": "^2.3.7"
   },
   "devDependencies": {
     "tape": "~2.3.2"
