@@ -5,7 +5,6 @@ var mkdirp = require('mkdirp');
 var minimist = require('minimist');
 var level = require('level');
 var strftime = require('strftime');
-var sprintf = require('sprintf');
 var through = require('through');
 var editor = require('editor');
 var stringify = require('json-stable-stringify');
@@ -156,7 +155,7 @@ else if (argv._[0] === 'data') {
                 var h = hours[key];
                 return {
                     date: h.date,
-                    hours: Number(sprintf('%.2f', h.hours))
+                    hours: Number(h.hours.toFixed(2))
                 };
             })
         } ], { space: 2 }));
