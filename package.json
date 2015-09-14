@@ -8,7 +8,7 @@
   "dependencies": {
     "editor": "^0.1.0",
     "json-stable-stringify": "^1.0.0",
-    "level": "~0.18.0",
+    "level": "^1.3.0",
     "minimist": "0.0.10",
     "mkdirp": "^0.3.5",
     "strftime": "~0.6.2",

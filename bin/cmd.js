@@ -18,7 +18,7 @@ var HOME = process.env.HOME || process.env.USERPROFILE;
 var datadir = argv.d || path.join(HOME, '.clocker');
 mkdirp.sync(datadir);
 
-var db = level(path.join(datadir, 'db'), { encoding: 'json' });
+var db = level(path.join(datadir, 'db'), { valueEncoding: 'json' });
 
 if (argv.h) usage(0)
 else if (argv._[0] === 'start') {
