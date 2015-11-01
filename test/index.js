@@ -28,8 +28,9 @@ test('Clocker constructor', function (t) {
 test('Clocker.add()', function (t) {
     t.test('Empty dataset', function (t) {
         var clocker = new Clocker(tempfile());
-        clocker.add(function (err) {
+        clocker.add(function (err, stamp) {
             t.notOk(err);
+            t.ok(stamp, 'stamp is returned');
             t.end();
         });
     });
@@ -39,8 +40,9 @@ test('Clocker.add()', function (t) {
         clocker.add({
             type: 'mytype',
             message: 'My Message'
-        }, function (err) {
+        }, function (err, stamp) {
             t.notOk(err);
+            t.ok(stamp, 'stamp is returned');
             t.end();
         });
     });
@@ -51,8 +53,9 @@ test('Clocker.add()', function (t) {
 test('Clocker.start()', function (t) {
     t.test('Empty dataset', function (t) {
         var clocker = new Clocker(tempfile());
-        clocker.start(function (err) {
+        clocker.start(function (err, stamp) {
             t.notOk(err);
+            t.ok(stamp, 'stamp is returned');
             t.end();
         });
     });
@@ -62,8 +65,9 @@ test('Clocker.start()', function (t) {
         clocker.start({
             type: 'mytype',
             message: 'My message'
-        }, function (err) {
+        }, function (err, stamp) {
             t.notOk(err);
+            t.ok(stamp, 'stamp is returned');
             t.end();
         });
     });
@@ -72,13 +76,38 @@ test('Clocker.start()', function (t) {
 });
 
 test('Clocker.stop()', function (t) {
-    var clocker = new Clocker(tempfile());
-    clocker.start(function () {
-        clocker.stop(function (err) {
-            t.notOk(err);
+    t.test('With given Id', function (t) {
+        var clocker = new Clocker(tempfile());
+        clocker.start(function (err, stamp1) {
+            clocker.start(function (err, stamp2) {
+                console.log(stamp2);
+                clocker.stop(stamp2, function (err) {
+                    t.notOk(err);
+                    t.end();
+                });
+            });
+        });
+    });
+
+    t.test('Only callback parameter', function (t) {
+        var clocker = new Clocker(tempfile());
+        clocker.start(function () {
+            clocker.stop(function (err) {
+                t.notOk(err);
+                t.end();
+            });
+        });
+    });
+
+    t.test('Without parameters', function (t) {
+        var clocker = new Clocker(tempfile());
+        clocker.start(function () {
+            clocker.stop();
             t.end();
-        })
-    })
+        });
+    });
+
+    t.end();
 });
 
 test('Clocker.data()', function (t) {
@@ -161,8 +190,8 @@ function testInstance (datasets, data) {
             start: start,
             end: end
         };
-        for (var key in data) {
-            dataset[key] = data[key];
+        for (var stamp in data) {
+            dataset[stamp] = data[stamp];
         }
         if (data.type === 'id') {
             dataset.type = 'type'+i;
