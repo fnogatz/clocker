@@ -8,6 +8,7 @@ var strftime = require('strftime');
 var through = require('through');
 var editor = require('editor');
 var stringify = require('json-stable-stringify');
+var parseTime = require('parse-messy-time');
 var os = require('os');
 var tmpdir = (os.tmpdir || os.tmpDir)();
 
@@ -74,11 +75,11 @@ else if (argv._[0] === 'add' && argv._.length === 3) {
     var end = strftime('%F %T', new Date(argv._[2]));
     var message = argv.message;
     var type = argv.type;
-    
+
     var value = { type: type, message: message, end: end };
     var pkey = 'time!' + start;
     var tkey = 'time-type!' + type + '!' + start;
-    
+
     db.batch([
         { type: 'put', key: pkey, value: value },
         { type: 'put', key: tkey, value: 0 }
@@ -106,7 +107,7 @@ else if (argv._[0] === 'data') {
     var typeIsRegExp = isRegExp(type);
     var rate = argv.rate || argv.r || argv._[2];
     var title = argv.title || 'consulting';
-    
+
     var s = db.createReadStream({
         gt: 'time!' + (argv.gt || ''),
         lt: 'time!' + (argv.lt || '~')
@@ -130,7 +131,7 @@ else if (argv._[0] === 'data') {
                 nextDay.setMinutes(0);
                 nextDay.setSeconds(0);
                 nextDay.setMilliseconds(0);
-                
+
                 acc = reducer(acc, {
                     key: 'time!' + strftime('%F %T', nextDay),
                     value: row.value
@@ -147,7 +148,7 @@ else if (argv._[0] === 'data') {
             acc[key].hours += hours;
             return acc;
         }, {});
-        
+
         console.log(stringify([ {
             title: title,
             rate: rate,
@@ -174,11 +175,11 @@ else if (argv._[0] === 'csv') {
         if (row.value.archive && !argv.archive) return;
         if (argv.type && !isRegExp(argv.type) && row.value.type !== argv.type) return;
         if (argv.type && isRegExp(argv.type) && !testRegExp(argv.type, row.value.type)) return;
-        
+
         var start = new Date(row.key.split('!')[1]);
         var end = row.value.end && new Date(row.value.end);
         var elapsed = (end ? end : new Date) - start;
-        
+
         console.log('%s,%s,%s,%s,%s,%s,"%s","%s"',
             toStamp(row.key),
             strftime('%F', start),
@@ -203,11 +204,11 @@ else if (argv._[0] === 'list' || argv._[0] === 'ls') {
         if (argv.type && !isRegExp(argv.type) && row.value.type !== argv.type) return;
         if (argv.type && isRegExp(argv.type) && !testRegExp(argv.type, row.value.type)) return;
 
-        
+
         var start = new Date(row.key.split('!')[1]);
         var end = row.value.end && new Date(row.value.end);
         var elapsed = (end ? end : new Date) - start;
-        
+
         console.log(
             '%s  %s  [ %s - %s ]  (%s)%s%s',
             toStamp(row.key),
@@ -245,6 +246,8 @@ else if (argv._[0] === 'set') {
     var stamp;
     var prop;
     var value;
+    var terms;
+    var newTime;
 
     if (argv._.length < 3) {
         return error('clocker set [STAMP] KEY VALUE');
@@ -254,6 +257,16 @@ else if (argv._[0] === 'set') {
             stamp = row.key.split('!')[1];
             prop = argv._[1];
             value = argv._.slice(2).join(' ');
+            terms = value.split(' ');
+
+            if (terms.length === 3) {
+              newTime = parseTime(value);
+              value = [
+                newTime.getHours(),
+                (newTime.getMinutes() < 9 ? '0' + newTime.getMinutes() : newTime.getMinutes())
+              ].join(':');
+            }
+
             set(stamp, prop, value);
         });
     }
@@ -268,7 +281,7 @@ else if (argv._[0] === 'edit') {
     var stamp = argv._[1];
     var key = getKey(stamp);
     var prop = argv._[2];
-    
+
     db.get(key, function (err, row) {
         if (err) return error(err);
         var src = stringify(prop ? row[prop] : row, { space: 2 });
@@ -316,7 +329,7 @@ else if (argv._[0] === 'archive' || argv._[0] === 'unarchive') {
     s.pipe(through(function (row) {
         if (row.value.archive) return;
         if (argv.type && row.value.type !== argv.type) return;
-        
+
         row.value.archive = value;
         db.put(row.key, row.value, error);
     }));
@@ -375,7 +388,7 @@ function set (stamp, prop, value, originalValue) {
         // Use 'stop' as synonym for 'end'
         prop = 'end';
     }
-    
+
     if (prop === 'end') {
         db.get(key, function (err, row) {
             if (err) return error(err);
@@ -387,7 +400,7 @@ function set (stamp, prop, value, originalValue) {
         db.get(key, function (err, row) {
             if (err) return error(err);
             var newKey = 'time!' + updateDate(key, value, key.split('!')[1]);
-            
+
             db.batch([
                 { type: 'put', key: newKey, value: row },
                 { type: 'del', key: key }
@@ -399,7 +412,7 @@ function set (stamp, prop, value, originalValue) {
             if (err) return error(err);
             var prevType = originalValue || row.type;
             row.type = value;
-            db.batch([ 
+            db.batch([
                 prevType && { type: 'del', key: prevType },
                 { type: 'put', key: key, value: row }
             ].filter(Boolean), error);

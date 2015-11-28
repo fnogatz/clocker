@@ -11,6 +11,7 @@
     "level": "^1.3.0",
     "minimist": "0.0.10",
     "mkdirp": "^0.3.5",
+    "parse-messy-time": "^1.2.1",
     "strftime": "~0.6.2",
     "through": "^2.3.7"
   },
