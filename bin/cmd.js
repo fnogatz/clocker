@@ -246,8 +246,6 @@ else if (argv._[0] === 'set') {
     var stamp;
     var prop;
     var value;
-    var terms;
-    var newTime;
 
     if (argv._.length < 3) {
         return error('clocker set [STAMP] KEY VALUE');
@@ -257,16 +255,6 @@ else if (argv._[0] === 'set') {
             stamp = row.key.split('!')[1];
             prop = argv._[1];
             value = argv._.slice(2).join(' ');
-            terms = value.split(' ');
-
-            if (terms.length === 3) {
-              newTime = parseTime(value);
-              value = [
-                newTime.getHours(),
-                (newTime.getMinutes() < 9 ? '0' + newTime.getMinutes() : newTime.getMinutes())
-              ].join(':');
-            }
-
             set(stamp, prop, value);
         });
     }
@@ -451,7 +439,7 @@ function getLastRow (callback) {
 }
 
 function updateDate (key, value, old) {
-    var d = new Date(value);
+    var d = parseTime(value);
     if (isNaN(d.valueOf())) {
         if (!old || isNaN(old)) {
             old = key.split('!')[1];
