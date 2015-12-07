@@ -439,7 +439,15 @@ function getLastRow (callback) {
 }
 
 function updateDate (key, value, old) {
-    var d = parseTime(value);
+    var timestamp = Date.parse(value);
+    var d;
+    if (isNaN(timestamp)) {
+        d = parseTime(value);
+    }
+    else {
+        d = new Date(timestamp);
+    }
+
     if (isNaN(d.valueOf())) {
         if (!old || isNaN(old)) {
             old = key.split('!')[1];
