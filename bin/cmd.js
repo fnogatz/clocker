@@ -115,9 +115,9 @@ else if (argv._[0] === 'data') {
     var rows = [];
     var write = function (row) {
         if (row.value.archive && !argv.archive) return;
-        if (!type) rows.push(row);
-        if (row.value.type === type) rows.push(row)
-        if (typeIsRegExp && testRegExp(type, row.value.type)) rows.push(row)
+        if (!type) return rows.push(row);
+        if (row.value.type === type) return rows.push(row)
+        if (typeIsRegExp && testRegExp(type, row.value.type)) return rows.push(row)
     };
     s.pipe(through(write, function () {
         var hours = rows.reduce(function reducer (acc, row) {
