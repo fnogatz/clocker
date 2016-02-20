@@ -71,8 +71,8 @@ else if (argv._[0] === 'restart') {
     }
 }
 else if (argv._[0] === 'add' && argv._.length === 3) {
-    var start = strftime('%F %T', new Date(argv._[1]));
-    var end = strftime('%F %T', new Date(argv._[2]));
+    var start = strftime('%F %T', getDate(argv._[1]));
+    var end = strftime('%F %T', getDate(argv._[2]));
     var message = argv.message;
     var type = argv.type;
 
@@ -438,15 +438,21 @@ function getLastRow (callback) {
     }).once('data', callback);
 }
 
-function updateDate (key, value, old) {
-    var timestamp = Date.parse(value);
+function getDate (expr) {
+    var timestamp = Date.parse(expr);
     var d;
     if (isNaN(timestamp)) {
-        d = parseTime(value);
+        d = parseTime(expr);
     }
     else {
         d = new Date(timestamp);
     }
+
+    return d;
+}
+
+function updateDate (key, value, old) {
+    var d = getDate(value);
 
     if (isNaN(d.valueOf())) {
         if (!old || isNaN(old)) {
