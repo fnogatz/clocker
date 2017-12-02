@@ -251,7 +251,7 @@ else if (argv._[0] === 'set') {
     var value;
 
     if (argv._.length < 3) {
-        return error('clocker set [STAMP] KEY VALUE');
+        error('clocker set [STAMP] KEY VALUE');
     }
     else if (argv._.length === 3) {
         getLastRow(function (row) {
