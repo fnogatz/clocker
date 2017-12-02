@@ -430,6 +430,8 @@ function toStamp (s) {
 }
 
 function getKey (x) {
+    if (x === 'NaN') return strftime(KEY_FORMAT, new Date(NaN));
+
     if (!/^\d+$/.test(x)) return 'time!' + x;
     return strftime(KEY_FORMAT, new Date(x * 1000));
 }
