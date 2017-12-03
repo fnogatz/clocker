@@ -21,6 +21,7 @@ var KEY_FORMAT = 'time!%F %T'
 
 var HOME = process.env.HOME || process.env.USERPROFILE;
 var datadir = argv.d || path.join(HOME, '.clocker');
+var confile = argv.c || path.join(HOME, '.clocker', 'config.json');
 mkdirp.sync(datadir);
 
 var config = {
@@ -30,6 +31,13 @@ var config = {
         // 2: 'seconds' | 'minutes'
     ],
 }
+
+try {
+    var raw = fs.readFileSync(confile, 'utf8')
+    try {
+        config = JSON.parse(raw)
+    } catch(e) { error(e) }
+} catch(e) {}
 
 if (argv.rnd) config.rnd = argv.rnd.split(/[,:-\s]/g)
 
