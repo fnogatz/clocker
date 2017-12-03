@@ -53,8 +53,11 @@ usage:
   clocker unarchive [STAMP...]
     Un-archive a range of clocked records or a list of STAMPs.
 
-  Global Output Parameters:
+  Global Output Flags:
     clocker (status|ls|data|csv) --rnd=<ceil|floor|round>:<n>:<minutes|seconds>
       Apply rounding function to stamps prior to output. e.g.
         clocker ls --rnd=round:'30 seconds' (nearest half-minute)
         clocker ls --rnd=ceil:'6 minutes' (tenths of hour, always up)
+
+    clocker (status|ls) [--sec|--no-sec]
+      Don't display seconds
