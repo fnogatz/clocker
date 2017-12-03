@@ -11,6 +11,7 @@ var stringify = require('json-stable-stringify');
 var parseTime = require('parse-messy-time');
 var os = require('os');
 var tmpdir = (os.tmpdir || os.tmpDir)();
+var moment = require('moment-round');
 
 var argv = minimist(process.argv.slice(2), {
     alias: { m: 'message', v: 'verbose', a: 'archive', t: 'type' }
@@ -21,6 +22,16 @@ var KEY_FORMAT = 'time!%F %T'
 var HOME = process.env.HOME || process.env.USERPROFILE;
 var datadir = argv.d || path.join(HOME, '.clocker');
 mkdirp.sync(datadir);
+
+var config = {
+    rnd: [
+        // 0: 'ceil' | 'floor' | 'round',
+        // 1: <n>,
+        // 2: 'seconds' | 'minutes'
+    ],
+}
+
+if (argv.rnd) config.rnd = argv.rnd.split(/[,:-\s]/g)
 
 var db = level(path.join(datadir, 'db'), { valueEncoding: 'json' });
 
@@ -95,9 +106,9 @@ else if (argv._[0] === 'status') {
     });
     var status = 'stopped';
     s.once('data', function (row) {
-        var started = new Date(row.key.split('!')[1]);
+        var started = rndDate(new Date(row.key.split('!')[1]));
         if (!row.value.end) {
-            var elapsed = (new Date) - started;
+            var elapsed = rndDate(new Date) - started;
             status = 'elapsed time: ' + fmt(elapsed);
         }
     });
@@ -124,11 +135,11 @@ else if (argv._[0] === 'data') {
     };
     s.pipe(through(write, function () {
         var hours = rows.reduce(function reducer (acc, row) {
-            var start = new Date(row.key.split('!')[1]);
-            var end = row.value.end ? new Date(row.value.end) : new Date;
+            var start = rndDate(new Date(row.key.split('!')[1]));
+            var end = rndDate(row.value.end ? new Date(row.value.end) : new Date);
             var key = strftime('%F', start);
             if (key !== strftime('%F', end)) {
-                var nextDay = new Date(start);
+                var nextDay = rndDate(new Date(start));
                 nextDay.setDate(start.getDate() + 1);
                 nextDay.setHours(0);
                 nextDay.setMinutes(0);
@@ -179,9 +190,9 @@ else if (argv._[0] === 'csv') {
         if (argv.type && !isRegExp(argv.type) && row.value.type !== argv.type) return;
         if (argv.type && isRegExp(argv.type) && !testRegExp(argv.type, row.value.type)) return;
 
-        var start = new Date(row.key.split('!')[1]);
-        var end = row.value.end && new Date(row.value.end);
-        var elapsed = (end ? end : new Date) - start;
+        var start = rndDate(new Date(row.key.split('!')[1]));
+        var end = row.value.end && rndDate(new Date(row.value.end));
+        var elapsed = (end ? end : rndDate(new Date)) - start;
 
         console.log('%s,%s,%s,%s,%s,%s,"%s","%s"',
             toStamp(row.key),
@@ -208,9 +219,9 @@ else if (argv._[0] === 'list' || argv._[0] === 'ls') {
         if (argv.type && isRegExp(argv.type) && !testRegExp(argv.type, row.value.type)) return;
 
 
-        var start = new Date(row.key.split('!')[1]);
-        var end = row.value.end && new Date(row.value.end);
-        var elapsed = (end ? end : new Date) - start;
+        var start = rndDate(new Date(row.key.split('!')[1]));
+        var end = row.value.end && rndDate(new Date(row.value.end));
+        var elapsed = (end ? end : rndDate(new Date)) - start;
 
         console.log(
             '%s  %s  [ %s - %s ]  (%s)%s%s',
@@ -474,4 +485,12 @@ function isRegExp (str) {
 
 function testRegExp (re, str) {
     return RegExp(re.slice(1,-1)).test(str);
+}
+
+function rndDate(date) {
+    if (!config || !config.rnd || config.rnd.length == 0) return date;
+
+    var m = moment(date)
+    var r = config.rnd
+    return m[r[0]](r[1], r[2]).toDate()
 }
