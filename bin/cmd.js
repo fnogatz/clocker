@@ -30,6 +30,7 @@ var config = {
         // 1: <n>,
         // 2: 'seconds' | 'minutes'
     ],
+    fmt: { suppress_sec: false }
 }
 
 try {
@@ -40,6 +41,10 @@ try {
 } catch(e) {}
 
 if (argv.rnd) config.rnd = argv.rnd.split(/[,:-\s]/g)
+
+var suppressSec = (argv.sec !== undefined ? !argv.sec :
+    (argv.sec === undefined && config && config.fmt && config.fmt.suppress_sec))
+
 
 var db = level(path.join(datadir, 'db'), { valueEncoding: 'json' });
 
@@ -117,7 +122,7 @@ else if (argv._[0] === 'status') {
         var started = rndDate(new Date(row.key.split('!')[1]));
         if (!row.value.end) {
             var elapsed = rndDate(new Date) - started;
-            status = 'elapsed time: ' + fmt(elapsed);
+            status = 'elapsed time: ' + fmt(elapsed, suppressSec);
         }
     });
     s.once('end', function () {
@@ -235,9 +240,9 @@ else if (argv._[0] === 'list' || argv._[0] === 'ls') {
             '%s  %s  [ %s - %s ]  (%s)%s%s',
             toStamp(row.key),
             strftime('%F', start),
-            strftime('%T', start),
-            end ? strftime('%T', end) : 'NOW',
-            fmt(elapsed),
+            strftime(suppressSec ? '%R' : '%T', start),
+            end ? strftime(suppressSec ? '%R' : '%T', end) : 'NOW',
+            fmt(elapsed, suppressSec),
             (row.value.type ? '  [' + row.value.type + ']' : ''),
             (row.value.archive ? ' A' : '')
         );
@@ -383,12 +388,12 @@ function pad (s, len) {
     return Array(Math.max(0, len - String(s).length + 1)).join('0') + s;
 }
 
-function fmt (elapsed) {
+function fmt (elapsed, suppressSec) {
     var n = elapsed / 1000;
     var hh = pad(Math.floor(n / 60 / 60), 2);
     var mm = pad(Math.floor(n / 60 % 60), 2);
     var ss = pad(Math.floor(n % 60), 2);
-    return [ hh, mm, ss ].join(':');
+    return (suppressSec ? [ hh, mm ] : [ hh, mm, ss ]).join(':');
 }
 
 function set (stamp, prop, value, originalValue) {
