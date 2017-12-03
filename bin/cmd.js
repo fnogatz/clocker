@@ -501,6 +501,9 @@ function testRegExp (re, str) {
 }
 
 function rndDate(date) {
+    // off forced by flag --no-rnd or --rnd=''
+    if (argv.rnd === false, '||', (typeof argv.rnd === "string" && argv.rnd.length == 0)) return date;
+    // missing config
     if (!config || !config.rnd || config.rnd.length == 0) return date;
 
     var m = moment(date)
