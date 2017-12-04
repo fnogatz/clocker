@@ -11,7 +11,7 @@ var stringify = require('json-stable-stringify');
 var parseTime = require('parse-messy-time');
 var os = require('os');
 var tmpdir = (os.tmpdir || os.tmpDir)();
-var moment = require('moment-round');
+var roundDate = require('round-date');
 
 var argv = minimist(process.argv.slice(2), {
     alias: { m: 'message', v: 'verbose', a: 'archive', t: 'type' }
@@ -28,7 +28,7 @@ var config = {
     rnd: [
         // 0: 'ceil' | 'floor' | 'round',
         // 1: <n>,
-        // 2: 'seconds' | 'minutes'
+        // 2: 'seconds' | 'minutes' | 'hours'
     ],
     fmt: { suppress_sec: false }
 }
@@ -41,6 +41,7 @@ try {
 } catch(e) {}
 
 if (argv.rnd) config.rnd = argv.rnd.split(/[,:-\s]/g)
+if (config.rnd && !Array.isArray(config.rnd)) config.rnd = config.rnd.split(/[,:-\s]/g)
 
 var suppressSec = (argv.sec !== undefined ? !argv.sec :
     (argv.sec === undefined && config && config.fmt && config.fmt.suppress_sec))
@@ -506,7 +507,22 @@ function rndDate(date) {
     // missing config
     if (!config || !config.rnd || config.rnd.length == 0) return date;
 
-    var m = moment(date)
-    var r = config.rnd
-    return m[r[0]](r[1], r[2]).toDate()
+    var r = [].concat(config.rnd)
+    r[1] = parseFloat(r[1])
+    if (r.length !== 3
+            || !/(?:round|ceil|floor)/.test(r[0])
+            || isNaN(r[1])
+            || !/(?:hours|minutes|seconds)/.test(r[2]))
+        error('Expected Rounding config like [{ceil, floor, round}, n, {hours, minutes, seconds}]; got: ' + JSON.stringify(r))
+
+    var meth = r[0]
+    var mult = {
+        hours: 60*60,
+        minutes: 60,
+        seconds: 1
+    }[r[2]]
+
+    if (!mult) error(JSON.stringify(r[2]) + " must be 'hours', 'minutes', or 'seconds'")
+
+    return roundDate[r[0]](r[1] * mult, date)
 }
