@@ -15,6 +15,9 @@ var tmpdir = (os.tmpdir || os.tmpDir)();
 var argv = minimist(process.argv.slice(2), {
     alias: { m: 'message', v: 'verbose', a: 'archive', t: 'type' }
 });
+
+var KEY_FORMAT = 'time!%F %T'
+
 var HOME = process.env.HOME || process.env.USERPROFILE;
 var datadir = argv.d || path.join(HOME, '.clocker');
 mkdirp.sync(datadir);
@@ -248,7 +251,7 @@ else if (argv._[0] === 'set') {
     var value;
 
     if (argv._.length < 3) {
-        return error('clocker set [STAMP] KEY VALUE');
+        error('clocker set [STAMP] KEY VALUE');
     }
     else if (argv._.length === 3) {
         getLastRow(function (row) {
@@ -325,7 +328,7 @@ else if (argv._[0] === 'archive' || argv._[0] === 'unarchive') {
 else usage(1)
 
 function start (date, message, type, cb) {
-    var pkey = strftime('time!%F %T', d);
+    var pkey = strftime(KEY_FORMAT, d);
     var tkey = 'time-type!' + type + '!' + strftime('%F %T', d);
     db.batch([
         { type: 'put', key: pkey, value: { type: type, message: message } },
@@ -427,8 +430,10 @@ function toStamp (s) {
 }
 
 function getKey (x) {
+    if (x === 'NaN') return strftime(KEY_FORMAT, new Date(NaN));
+
     if (!/^\d+$/.test(x)) return 'time!' + x;
-    return strftime('time!%F %T', new Date(x * 1000));
+    return strftime(KEY_FORMAT, new Date(x * 1000));
 }
 
 function getLastRow (callback) {
