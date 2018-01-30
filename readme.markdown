@@ -92,9 +92,10 @@ usage:
     Show dates between lt and gt. Show archived dates with -a.
     Optionally filter by TYPE, a string or /regex/.
 
-  clocker csv {--gt DATE, --lt DATE, -a}
+  clocker csv {--gt DATE, --lt DATE, --props FIELDS, -a}
     Generate CSV output.
     Show dates between lt and gt. Show archived dates with -a.
+    Additionally display the properties FIELDS.
 
   clocker add START END {-t TYPE, -m MESSAGE}
     Add a hours from START to END as date strings.

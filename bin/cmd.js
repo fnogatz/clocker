@@ -166,8 +166,18 @@ else if (argv._[0] === 'data') {
     }));
 }
 else if (argv._[0] === 'csv') {
+    var additionalFields = [];
+    if (argv.props) {
+        additionalFields = argv.props.split(',');
+    }
+
     // print header
-    console.log('Key,Date,Start,End,Duration,Archived,Type,Message');
+    var header = 'Key,Date,Start,End,Duration,Archived,Type,Message';
+    if (additionalFields.length) {
+        header += ',';
+        header += additionalFields.join(',');
+    }
+    console.log(header);
 
     var s = db.createReadStream({
         gt: 'time!' + (argv.gt || ''),
@@ -183,7 +193,8 @@ else if (argv._[0] === 'csv') {
         var end = row.value.end && new Date(row.value.end);
         var elapsed = (end ? end : new Date) - start;
 
-        console.log('%s,%s,%s,%s,%s,%s,"%s","%s"',
+        var output = '%s,%s,%s,%s,%s,%s,"%s","%s"';
+        var fields = [
             toStamp(row.key),
             strftime('%F', start),
             strftime('%T', start),
@@ -192,7 +203,17 @@ else if (argv._[0] === 'csv') {
             (row.value.archive ? 'A' : ''),
             (row.value.type || '').replace('"', '""'),
             (row.value.message || '').replace('"', '""')
-        );
+        ];
+        if (additionalFields.length) {
+            output += ',';
+            output += additionalFields.map(function () { return '"%s"'; }).join(',');
+        
+            fields = fields.concat(additionalFields.map(function (prop) {
+                return (row.value[prop] || '').replace('"', '""')
+            }));
+        }
+
+        console.log.apply(null, [output].concat(fields));
     }));
 }
 else if (argv._[0] === 'list' || argv._[0] === 'ls') {
