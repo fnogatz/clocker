@@ -438,10 +438,18 @@ function getLastRow (callback) {
     }).once('data', callback);
 }
 
+function isUnixTimestamp (expr) {
+    return /^1[0-9]{9}$/.test(expr);
+}
+
 function getDate (expr) {
-    var timestamp = Date.parse(expr);
     var d;
-    if (isNaN(timestamp)) {
+    var timestamp = Date.parse(expr);
+
+    if (isUnixTimestamp(expr)) {
+        d = new Date(expr * 1000);
+    }
+    else if (isNaN(timestamp)) {
         d = parseTime(expr);
     }
     else {
