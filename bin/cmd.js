@@ -392,10 +392,12 @@ function set (stamp, prop, value, originalValue) {
             if (err) return error(err);
             var newKey = 'time!' + updateDate(key, value, key.split('!')[1]);
 
-            db.batch([
-                { type: 'put', key: newKey, value: row },
-                { type: 'del', key: key }
-            ], error);
+            if (newKey !== key) {
+                db.batch([
+                    { type: 'put', key: newKey, value: row },
+                    { type: 'del', key: key }
+                ], error);
+            }
         });
     }
     else if (prop === 'type') {
