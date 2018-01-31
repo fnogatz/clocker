@@ -122,7 +122,29 @@ usage:
   clocker unarchive {--lt=DATE, --gt=DATE}
   clocker unarchive [STAMP...]
     Un-archive a range of clocked records or a list of STAMPs.
+
+  Global Output Flags:
+    clocker (status|ls|data|csv) --rnd=<ceil|floor|round>:<n>:<minutes|seconds>
+      Apply rounding function to stamps prior to output. e.g.
+        clocker ls --rnd=round:'30 seconds' (nearest half-minute)
+        clocker ls --rnd=ceil:'6 minutes' (tenths of hour, always up)
+
+    clocker (status|ls) [--sec|--no-sec]
+      Don't display seconds
 ```
+
+## Optional Output Manipulating Flags
+
+Timestamps may be manipulated for some output commands as follows
+
+### Rounding (--rnd) [status, ls, data, csv]
+
+Apply rounding functions to the stamps. Available functions are: ceil, floor, and round. The precision of the rounding may be arbitrarily specified. The Date fields that may be rounded are: hours, minutes, and seconds.
+
+### Suppress Seconds (--no-sec) [ls, status]
+
+Don't display sconds.
+
 
 # install
 
@@ -133,6 +155,18 @@ npm install -g clocker
 ```
 
 to get the clocker command.
+
+# configuration
+
+The output manipulating options may also be made permanent by creating a configuration file in ~/.clocker/config.json. The format is remarkably similar to:
+
+    {
+        "rnd": [ "ceil", 6, "minutes" ],
+        "fmt": {
+            "suppress_sec": true
+        }
+    }
+
 
 # license
 
