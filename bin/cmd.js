@@ -29,7 +29,12 @@ else if (argv._[0] === 'start') {
     var d = argv.date ? new Date(argv.date) : new Date;
     var message = argv.message;
     var type = argv.type;
-    start(d, message, type, error);
+    if (typeof type === 'boolean') {
+        error('Empty type specified');
+    }
+    else {
+        start(d, message, type, error);
+    }
 }
 else if (argv._[0] === 'stop') {
     var d = argv.date ? new Date(argv.date) : new Date;
