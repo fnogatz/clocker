@@ -69,8 +69,9 @@ $ clocker data BAZCORP --rate 125 | invoicer -r BAZCORP -o invoice.pdf
 ```
 usage:
 
-  clocker start {-t TYPE, -m MESSAGE}
+  clocker start {-t TYPE, -m MESSAGE} [-- DATA]
     Start the clock. Optionally give a TYPE and MESSAGE.
+    Optionally set additional DATA in the format --KEY=VALUE.
 
   clocker stop {-m MESSAGE}
     Stop the clock.

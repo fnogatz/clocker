@@ -12,14 +12,17 @@ var parseTime = require('parse-messy-time');
 var os = require('os');
 var tmpdir = (os.tmpdir || os.tmpDir)();
 
-var argvData = {}
 var argv = minimist(process.argv.slice(2), {
     alias: { m: 'message', v: 'verbose', a: 'archive', t: 'type' },
-    unknown: function saveUnknownData (data) {
-        console.log(data)
-        return true
-    }
+    '--': true
 });
+
+var RESERVED_DATA_ENTRIES = [
+    'start',
+    'end',
+    'type',
+    'message'
+];
 
 var KEY_FORMAT = 'time!%F %T'
 
@@ -38,7 +41,7 @@ else if (argv._[0] === 'start') {
         error('Empty type specified');
     }
     else {
-        start(d, message, type, getData(argv), error);
+        start(d, message, type, error);
     }
 }
 else if (argv._[0] === 'stop') {
@@ -80,7 +83,7 @@ else if (argv._[0] === 'restart') {
     }
 
     function onrowrestart (row) {
-        start(new Date, row.value.message, row.value.type, null, error);
+        start(new Date, row.value.message, row.value.type, error);
     }
 }
 else if (argv._[0] === 'add' && argv._.length === 3) {
@@ -219,7 +222,7 @@ else if (argv._[0] === 'csv') {
             output += additionalFields.map(function () { return '"%s"'; }).join(',');
         
             fields = fields.concat(additionalFields.map(function (prop) {
-                return (row.value[prop] || '').replace('"', '""')
+                return (row.value[prop] || '').toString().replace('"', '""')
             }));
         }
 
@@ -361,8 +364,9 @@ else usage(1)
 function start (date, message, type, data, cb) {
     var pkey = strftime(KEY_FORMAT, d);
     var tkey = 'time-type!' + type + '!' + strftime('%F %T', d);
+    var value = addData({ type: type, message: message })
     db.batch([
-        { type: 'put', key: pkey, value: { type: type, message: message } },
+        { type: 'put', key: pkey, value: value },
         { type: 'put', key: tkey, value: 0 }
     ], cb);
 }
@@ -517,7 +521,18 @@ function testRegExp (re, str) {
     return RegExp(re.slice(1,-1)).test(str);
 }
 
-function getData(argv) {
-    console.log(argv)
-    process.exit(0)
+
+function addData (obj) {
+    var data = minimist(argv['--']);
+    var res = {};
+    for (var key in data) {
+        if (RESERVED_DATA_ENTRIES.indexOf(key) >= 0) {
+            return error('Reserved data key specified: ' + key);
+        }
+        if (key === '_' || key === '--') {
+            continue;
+        }
+        obj[key] = data[key];
+    }
+    return obj;
 }
