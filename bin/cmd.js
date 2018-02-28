@@ -12,8 +12,13 @@ var parseTime = require('parse-messy-time');
 var os = require('os');
 var tmpdir = (os.tmpdir || os.tmpDir)();
 
+var argvData = {}
 var argv = minimist(process.argv.slice(2), {
-    alias: { m: 'message', v: 'verbose', a: 'archive', t: 'type' }
+    alias: { m: 'message', v: 'verbose', a: 'archive', t: 'type' },
+    unknown: function saveUnknownData (data) {
+        console.log(data)
+        return true
+    }
 });
 
 var KEY_FORMAT = 'time!%F %T'
@@ -33,7 +38,7 @@ else if (argv._[0] === 'start') {
         error('Empty type specified');
     }
     else {
-        start(d, message, type, error);
+        start(d, message, type, getData(argv), error);
     }
 }
 else if (argv._[0] === 'stop') {
@@ -75,7 +80,7 @@ else if (argv._[0] === 'restart') {
     }
 
     function onrowrestart (row) {
-        start(new Date, row.value.message, row.value.type, error);
+        start(new Date, row.value.message, row.value.type, null, error);
     }
 }
 else if (argv._[0] === 'add' && argv._.length === 3) {
@@ -353,7 +358,7 @@ else if (argv._[0] === 'archive' || argv._[0] === 'unarchive') {
 }
 else usage(1)
 
-function start (date, message, type, cb) {
+function start (date, message, type, data, cb) {
     var pkey = strftime(KEY_FORMAT, d);
     var tkey = 'time-type!' + type + '!' + strftime('%F %T', d);
     db.batch([
@@ -510,4 +515,9 @@ function isRegExp (str) {
 
 function testRegExp (re, str) {
     return RegExp(re.slice(1,-1)).test(str);
+}
+
+function getData(argv) {
+    console.log(argv)
+    process.exit(0)
 }
