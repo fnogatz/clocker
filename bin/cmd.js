@@ -214,15 +214,15 @@ else if (argv._[0] === 'csv') {
             end ? strftime('%T', end) : 'NOW',
             fmt(elapsed),
             (row.value.archive ? 'A' : ''),
-            (row.value.type || '').replace('"', '""'),
-            (row.value.message || '').replace('"', '""')
+            (row.value.type || '').replace(/"/g, '""'),
+            (row.value.message || '').replace(/"/g, '""')
         ];
         if (additionalFields.length) {
             output += ',';
             output += additionalFields.map(function () { return '"%s"'; }).join(',');
         
             fields = fields.concat(additionalFields.map(function (prop) {
-                return (row.value[prop] || '').toString().replace('"', '""')
+                return (row.value[prop] || '').toString().replace(/"/g, '""')
             }));
         }
 
