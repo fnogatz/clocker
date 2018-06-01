@@ -24,6 +24,10 @@ usage:
     Show dates between lt and gt. Show archived dates with -a.
     Optionally filter by TYPE, a string or /regex/.
 
+  clocker report {--reportDay DATE}
+    Show all logged hours of a specific day.
+    If no --reportDay is set, the current day will be used.
+
   clocker csv {--gt DATE, --lt DATE, --props FIELDS, -a}
     Generate CSV output.
     Show dates between lt and gt. Show archived dates with -a.
