@@ -31,9 +31,10 @@ $ clocker list
 1393020600  2014-02-21  [ 14:10:00 - 18:32:00 ]  (04:22:00)  [BAZCORP]
 ```
 
-If you want to see a report of all logged hours of a specific day you can use the `clocker report` command:
+You can see a report of all logged hours of a specific day with `clocker report` command:
+
 ```
-$clocker report --reportDay 2018-05-23
+$ clocker report --reportDay 2018-05-23
 Report for 23 May 2018:
 1527053106  2018-05-23  [ 07:25:06 - 08:09:25 ]  (00:44:19)  [TYPE_A]
 1527056838  2018-05-23  [ 08:27:18 - 11:30:00 ]  (03:02:42)  [TYPE_B]
@@ -46,6 +47,7 @@ TYPE_C: 00:28:18
 
 total: 07:45:37
 ```
+
 Without the `--reportDay` option, the report command will list all logged hours of the current day.
 
 You can generate a json dump with `clocker data`:
