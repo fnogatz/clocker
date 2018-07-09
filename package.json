@@ -15,11 +15,8 @@
     "strftime": "~0.6.2",
     "through": "^2.3.7"
   },
-  "devDependencies": {
-    "tape": "~2.3.2"
-  },
   "scripts": {
-    "test": "tape test/*.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
