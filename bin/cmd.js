@@ -246,16 +246,8 @@ else if (argv._[0] === 'list' || argv._[0] === 'ls') {
         var end = row.value.end && new Date(row.value.end);
         var elapsed = (end ? end : new Date) - start;
 
-        console.log(
-            '%s  %s  [ %s - %s ]  (%s)%s%s',
-            toStamp(row.key),
-            strftime('%F', start),
-            strftime('%T', start),
-            end ? strftime('%T', end) : 'NOW',
-            fmt(elapsed),
-            (row.value.type ? '  [' + row.value.type + ']' : ''),
-            (row.value.archive ? ' A' : '')
-        );
+        printEntry(row.key, start, end, elapsed, row.value.type, row.value.archive);
+
         if (argv.verbose && row.value.message) {
             var lines = row.value.message.split('\n');
             console.log();
@@ -358,6 +350,47 @@ else if (argv._[0] === 'archive' || argv._[0] === 'unarchive') {
         row.value.archive = value;
         db.put(row.key, row.value, error);
     }));
+}
+else if (argv._[0] === 'report') {
+
+    // options and arguments
+    var day = argv.reportDay;
+
+    // get report data
+    var reportDay = (day && typeof day === 'string') ? getDate(day) : new Date();
+    var reportDayTomorrow = new Date(reportDay);
+    reportDayTomorrow.setDate(reportDayTomorrow.getDate() +1);
+
+    console.log('Report for %s:', printDate(reportDay));
+
+    var s = db.createReadStream({
+        gt: 'time!' + (strftime('%F', reportDay) || ''),
+        lt: 'time!' + (strftime('%F', reportDayTomorrow) || '~')
+    });
+    s.on('error', error);
+
+    var sumsByType = {};
+    var totalSum = 0;
+
+    s.pipe(through(function (row) {
+
+        var start = new Date(row.key.split('!')[1]);
+        var end = row.value.end && new Date(row.value.end);
+        var elapsed = (end ? end : new Date) - start;
+
+        printEntry(row.key, start, end, elapsed, row.value.type, row.value.archive);
+
+        sumsByType[row.value.type] ? sumsByType[row.value.type] += elapsed : sumsByType[row.value.type] = elapsed;
+
+    }, function end () {
+        console.log('');
+        for(var type in sumsByType) {
+            console.log("%s: %s", type, fmt(sumsByType[type]));
+            totalSum += sumsByType[type];
+        }
+        console.log("\ntotal: %s", fmt(totalSum));
+    }));
+
 }
 else usage(1)
 
@@ -521,6 +554,29 @@ function testRegExp (re, str) {
     return RegExp(re.slice(1,-1)).test(str);
 }
 
+function printEntry (key, start, end, elapsed, type, archive) {
+    console.log(
+        '%s  %s  [ %s - %s ]  (%s)%s%s',
+        toStamp(key),
+        strftime('%F', start),
+        strftime('%T', start),
+        end ? strftime('%T', end) : 'NOW',
+        fmt(elapsed),
+        (type ? '  [' + type + ']' : ''),
+        (archive ? ' A' : '')
+    );
+}
+
+function printDate(date) {
+  var monthNames = [
+    "January", "February", "March",
+    "April", "May", "June", "July",
+    "August", "September", "October",
+    "November", "December"
+  ];
+
+  return date.getDate() + ' ' + monthNames[date.getMonth()] + ' ' + date.getFullYear();
+}
 
 function addData (obj) {
     var data = minimist(argv['--']);
