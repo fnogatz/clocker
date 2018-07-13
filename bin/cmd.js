@@ -248,13 +248,8 @@ else if (argv._[0] === 'list' || argv._[0] === 'ls') {
 
         printEntry(row.key, start, end, elapsed, row.value.type, row.value.archive);
 
-        if (argv.verbose && row.value.message) {
-            var lines = row.value.message.split('\n');
-            console.log();
-            lines.forEach(function (line) {
-                console.log('    ' + line);
-            });
-            console.log();
+        if (argv.verbose) {
+            printMessage(row.value.message)
         }
     }));
 }
@@ -379,6 +374,9 @@ else if (argv._[0] === 'report') {
         var elapsed = (end ? end : new Date) - start;
 
         printEntry(row.key, start, end, elapsed, row.value.type, row.value.archive);
+        if(argv.verbose) {
+            printMessage(row.value.message)
+        }
 
         sumsByType[row.value.type] ? sumsByType[row.value.type] += elapsed : sumsByType[row.value.type] = elapsed;
 
@@ -576,6 +574,17 @@ function printDate(date) {
   ];
 
   return date.getDate() + ' ' + monthNames[date.getMonth()] + ' ' + date.getFullYear();
+}
+
+function printMessage(message) {
+    if(message) {
+        var lines = message.split('\n');
+        console.log();
+        lines.forEach(function (line) {
+            console.log('    ' + line);
+        });
+        console.log();
+    }
 }
 
 function addData (obj) {
