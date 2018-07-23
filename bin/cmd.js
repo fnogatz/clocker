@@ -565,19 +565,19 @@ function printEntry (key, start, end, elapsed, type, archive) {
     );
 }
 
-function printDate(date) {
-  var monthNames = [
-    "January", "February", "March",
-    "April", "May", "June", "July",
-    "August", "September", "October",
-    "November", "December"
-  ];
+function printDate (date) {
+    var monthNames = [
+        "January", "February", "March",
+        "April", "May", "June", "July",
+        "August", "September", "October",
+        "November", "December"
+    ];
 
-  return date.getDate() + ' ' + monthNames[date.getMonth()] + ' ' + date.getFullYear();
+    return date.getDate() + ' ' + monthNames[date.getMonth()] + ' ' + date.getFullYear();
 }
 
-function printMessage(message) {
-    if(message) {
+function printMessage (message) {
+    if (message) {
         var lines = message.split('\n');
         console.log();
         lines.forEach(function (line) {
