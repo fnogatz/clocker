@@ -101,7 +101,7 @@ usage:
   clocker status
     Show the elapsed time if the clock is active or "stopped".
 
-  clocker data {-t TYPE, -r RATE, --title TITLE, --gt=DATE, --lt=DATE, -a}
+  clocker data {-t TYPE, -r RATE, --title TITLE, --gt DATE, --lt DATE, -a}
     Generate invoicer-compatible json output.
     Show dates between lt and gt. Show archived dates with -a.
     Optionally filter by TYPE, a string or /regex/.
@@ -112,8 +112,9 @@ usage:
     Show dates between lt and gt. Show archived dates with -a.
     Optionally filter by TYPE, a string or /regex/.
 
-  clocker report {--reportDay DATE}
+  clocker report {-v, --reportDay DATE}
     Show all logged hours of a specific day.
+    In verbose mode (-v), also show clocked messages.
     If no --reportDay is set, the current day will be used.
 
   clocker csv {--gt DATE, --lt DATE, --props FIELDS, -a}
