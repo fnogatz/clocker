@@ -24,7 +24,7 @@ usage:
     Show dates between lt and gt. Show archived dates with -a.
     Optionally filter by TYPE, a string or /regex/.
 
-  clocker report {-v --reportDay DATE}
+  clocker report {-v, --reportDay DATE}
     Show all logged hours of a specific day.
     In verbose mode (-v), also show clocked messages.
     If no --reportDay is set, the current day will be used.
