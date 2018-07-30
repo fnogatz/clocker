@@ -2,7 +2,7 @@
 
 track project hours
 
-[![clocker](http://substack.net/images/clocker.png)](http://substack.net/images/clocker.svg)
+![clocker](clocker.png)
 
 # example
 
