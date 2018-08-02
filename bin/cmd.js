@@ -10,7 +10,7 @@ var editor = require('editor')
 var stringify = require('json-stable-stringify')
 var parseTime = require('parse-messy-time')
 var os = require('os')
-var tmpdir = (os.tmpdir || os.tmpDir)()
+var tmpdir = os.tmpdir()
 
 var argv = minimist(process.argv.slice(2), {
   alias: { m: 'message', v: 'verbose', a: 'archive', t: 'type' },

@@ -5,6 +5,9 @@
   "bin": {
     "clocker": "bin/cmd.js"
   },
+  "engines": {
+    "node" : ">= 7.0"
+  },
   "dependencies": {
     "editor": "^0.1.0",
     "json-stable-stringify": "^1.0.0",
