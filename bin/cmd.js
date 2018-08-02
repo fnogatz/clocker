@@ -84,14 +84,14 @@ var db = level(path.join(datadir, 'db'), { valueEncoding: 'json' });
       start(new Date(), row.value.message, row.value.type, error)
     }
   } else if (argv._[0] === 'add' && argv._.length === 3) {
-    var start = strftime('%F %T', getDate(argv._[1]))
+    var begin = strftime('%F %T', getDate(argv._[1]))
     var end = strftime('%F %T', getDate(argv._[2]))
     var message = argv.message
     var type = argv.type
 
     var value = { type: type, message: message, end: end }
-    var pkey = 'time!' + start
-    var tkey = 'time-type!' + type + '!' + start
+    var pkey = 'time!' + begin
+    var tkey = 'time-type!' + type + '!' + begin
 
     db.batch([
       { type: 'put', key: pkey, value: value },
@@ -134,12 +134,12 @@ var db = level(path.join(datadir, 'db'), { valueEncoding: 'json' });
     }
     s.pipe(through(write, function () {
       var hours = rows.reduce(function reducer (acc, row) {
-        var start = new Date(row.key.split('!')[1])
+        var begin = new Date(row.key.split('!')[1])
         var end = row.value.end ? new Date(row.value.end) : new Date()
-        var key = strftime('%F', start)
+        var key = strftime('%F', begin)
         if (key !== strftime('%F', end)) {
-          var nextDay = new Date(start)
-          nextDay.setDate(start.getDate() + 1)
+          var nextDay = new Date(begin)
+          nextDay.setDate(begin.getDate() + 1)
           nextDay.setHours(0)
           nextDay.setMinutes(0)
           nextDay.setSeconds(0)
@@ -151,10 +151,10 @@ var db = level(path.join(datadir, 'db'), { valueEncoding: 'json' });
           })
           end = nextDay
         }
-        var hours = (end - start) / 1000 / 60 / 60
+        var hours = (end - begin) / 1000 / 60 / 60
         if (!acc[key]) {
           acc[key] = {
-            date: strftime('%F', start),
+            date: strftime('%F', begin),
             hours: 0
           }
         }
@@ -198,15 +198,15 @@ var db = level(path.join(datadir, 'db'), { valueEncoding: 'json' });
       if (argv.type && !isRegExp(argv.type) && row.value.type !== argv.type) return
       if (argv.type && isRegExp(argv.type) && !testRegExp(argv.type, row.value.type)) return
 
-      var start = new Date(row.key.split('!')[1])
+      var begin = new Date(row.key.split('!')[1])
       var end = row.value.end && new Date(row.value.end)
-      var elapsed = (end || new Date()) - start
+      var elapsed = (end || new Date()) - begin
 
       var output = '%s,%s,%s,%s,%s,%s,"%s","%s"'
       var fields = [
         toStamp(row.key),
-        strftime('%F', start),
-        strftime('%T', start),
+        strftime('%F', begin),
+        strftime('%T', begin),
         end ? strftime('%T', end) : 'NOW',
         fmt(elapsed),
         (row.value.archive ? 'A' : ''),
@@ -236,11 +236,11 @@ var db = level(path.join(datadir, 'db'), { valueEncoding: 'json' });
       if (argv.type && !isRegExp(argv.type) && row.value.type !== argv.type) return
       if (argv.type && isRegExp(argv.type) && !testRegExp(argv.type, row.value.type)) return
 
-      var start = new Date(row.key.split('!')[1])
+      var begin = new Date(row.key.split('!')[1])
       var end = row.value.end && new Date(row.value.end)
-      var elapsed = (end || new Date()) - start
+      var elapsed = (end || new Date()) - begin
 
-      printEntry(row.key, start, end, elapsed, row.value.type, row.value.archive)
+      printEntry(row.key, begin, end, elapsed, row.value.type, row.value.archive)
 
       if (argv.verbose) {
         printMessage(row.value.message)
@@ -351,11 +351,11 @@ var db = level(path.join(datadir, 'db'), { valueEncoding: 'json' });
     var totalSum = 0
 
     s.pipe(through(function (row) {
-      var start = new Date(row.key.split('!')[1])
+      var begin = new Date(row.key.split('!')[1])
       var end = row.value.end && new Date(row.value.end)
-      var elapsed = (end || new Date()) - start
+      var elapsed = (end || new Date()) - begin
 
-      printEntry(row.key, start, end, elapsed, row.value.type, row.value.archive)
+      printEntry(row.key, begin, end, elapsed, row.value.type, row.value.archive)
       if (argv.verbose) {
         printMessage(row.value.message)
       }
