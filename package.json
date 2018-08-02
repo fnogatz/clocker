@@ -16,7 +16,8 @@
     "through": "^2.3.7"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "standard": "standard",
+    "test": "npm run standard"
   },
   "repository": {
     "type": "git",
@@ -35,5 +36,8 @@
     "email": "mail@substack.net",
     "url": "http://substack.net"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "standard": "^11.0.1"
+  }
 }
