@@ -30,22 +30,26 @@ var HOME = process.env.HOME || process.env.USERPROFILE
 var datadir = argv.d || path.join(HOME, '.clocker')
 mkdirp.sync(datadir)
 
-var db = level(path.join(datadir, 'db'), { valueEncoding: 'json' });
+var db = level(path.join(datadir, 'db'), { valueEncoding: 'json' })
+
+var d
 
 (function () {
+  var k, s, type, message, stamp, value, prop
+
   if (argv.h) usage(0)
   else if (argv._[0] === 'start') {
-    var d = argv.date ? new Date(argv.date) : new Date()
-    var message = argv.message
-    var type = argv.type
+    d = argv.date ? new Date(argv.date) : new Date()
+    message = argv.message
+    type = argv.type
     if (typeof type === 'boolean') {
       error('Empty type specified')
     } else {
       start(d, message, type, error)
     }
   } else if (argv._[0] === 'stop') {
-    var d = argv.date ? new Date(argv.date) : new Date()
-    var k = argv.key || argv._[1]
+    d = argv.date ? new Date(argv.date) : new Date()
+    k = argv.key || argv._[1]
     if (k) {
       var key = getKey(k)
       db.get(key, function (err, value) {
@@ -60,17 +64,8 @@ var db = level(path.join(datadir, 'db'), { valueEncoding: 'json' });
         reverse: true
       }).once('data', onrowstop)
     }
-    function onrowstop (row) {
-      var m = argv.message
-      if (m) {
-        if (row.value.message) m = row.value.message + '\n' + m
-        row.value.message = m
-      }
-      row.value.end = strftime('%F %T', d)
-      db.put(row.key, row.value, error)
-    }
   } else if (argv._[0] === 'restart') {
-    var k = argv.key || argv._[1]
+    k = argv.key || argv._[1]
     if (k) {
       db.get(getKey(k), function (err, value) {
         if (err) error(err)
@@ -79,17 +74,13 @@ var db = level(path.join(datadir, 'db'), { valueEncoding: 'json' });
     } else {
       getLastRow(onrowrestart)
     }
-
-    function onrowrestart (row) {
-      start(new Date(), row.value.message, row.value.type, error)
-    }
   } else if (argv._[0] === 'add' && argv._.length === 3) {
     var begin = strftime('%F %T', getDate(argv._[1]))
     var end = strftime('%F %T', getDate(argv._[2]))
-    var message = argv.message
-    var type = argv.type
+    message = argv.message
+    type = argv.type
 
-    var value = { type: type, message: message, end: end }
+    value = { type: type, message: message, end: end }
     var pkey = 'time!' + begin
     var tkey = 'time-type!' + type + '!' + begin
 
@@ -98,7 +89,7 @@ var db = level(path.join(datadir, 'db'), { valueEncoding: 'json' });
       { type: 'put', key: tkey, value: 0 }
     ], error)
   } else if (argv._[0] === 'status') {
-    var s = db.createReadStream({
+    s = db.createReadStream({
       gt: 'time!',
       lt: 'time!~',
       limit: 1,
@@ -116,12 +107,12 @@ var db = level(path.join(datadir, 'db'), { valueEncoding: 'json' });
       console.log(status)
     })
   } else if (argv._[0] === 'data') {
-    var type = argv.type || argv._[1]
+    type = argv.type || argv._[1]
     var typeIsRegExp = isRegExp(type)
     var rate = argv.rate || argv.r || argv._[2]
     var title = argv.title || 'consulting'
 
-    var s = db.createReadStream({
+    s = db.createReadStream({
       gt: 'time!' + (argv.gt || ''),
       lt: 'time!' + (argv.lt || '~')
     })
@@ -136,7 +127,7 @@ var db = level(path.join(datadir, 'db'), { valueEncoding: 'json' });
       var hours = rows.reduce(function reducer (acc, row) {
         var begin = new Date(row.key.split('!')[1])
         var end = row.value.end ? new Date(row.value.end) : new Date()
-        var key = strftime('%F', begin)
+        key = strftime('%F', begin)
         if (key !== strftime('%F', end)) {
           var nextDay = new Date(begin)
           nextDay.setDate(begin.getDate() + 1)
@@ -188,7 +179,7 @@ var db = level(path.join(datadir, 'db'), { valueEncoding: 'json' });
     }
     console.log(header)
 
-    var s = db.createReadStream({
+    s = db.createReadStream({
       gt: 'time!' + (argv.gt || ''),
       lt: 'time!' + (argv.lt || '~')
     })
@@ -225,7 +216,7 @@ var db = level(path.join(datadir, 'db'), { valueEncoding: 'json' });
       console.log.apply(null, [output].concat(fields))
     }))
   } else if (argv._[0] === 'list' || argv._[0] === 'ls') {
-    var s = db.createReadStream({
+    s = db.createReadStream({
       gt: 'time!' + (argv.gt || ''),
       lt: 'time!' + (argv.lt || '~')
     })
@@ -247,21 +238,17 @@ var db = level(path.join(datadir, 'db'), { valueEncoding: 'json' });
       }
     }))
   } else if (argv._[0] === 'get') {
-    var key = getKey(argv._[1])
+    key = getKey(argv._[1])
     db.get(key, function (err, row) {
       if (err) return error(err)
       console.log(row)
     })
   } else if (argv._[0] === 'rm') {
     argv._.slice(1).forEach(function (k) {
-      var key = getKey(k)
+      key = getKey(k)
       db.del(key, error)
     })
   } else if (argv._[0] === 'set') {
-    var stamp
-    var prop
-    var value
-
     if (argv._.length < 3) {
       error('clocker set [STAMP] KEY VALUE')
     } else if (argv._.length === 3) {
@@ -278,9 +265,9 @@ var db = level(path.join(datadir, 'db'), { valueEncoding: 'json' });
       set(stamp, prop, value)
     }
   } else if (argv._[0] === 'edit') {
-    var stamp = argv._[1]
-    var key = getKey(stamp)
-    var prop = argv._[2]
+    stamp = argv._[1]
+    key = getKey(stamp)
+    prop = argv._[2]
 
     db.get(key, function (err, row) {
       if (err) return error(err)
@@ -307,18 +294,18 @@ var db = level(path.join(datadir, 'db'), { valueEncoding: 'json' });
       })
     })
   } else if (argv._[0] === 'insert') {
-    var key = getKey(argv._[1])
+    key = getKey(argv._[1])
     db.put(key, {}, function (err) {
       if (err) return error(err)
     })
   } else if (argv._[0] === 'archive' || argv._[0] === 'unarchive') {
-    var value = argv._[0] === 'archive'
+    value = argv._[0] === 'archive'
     if (argv._.length > 1) {
       return argv._.slice(1).forEach(function (stamp) {
         set(stamp, 'archive', value)
       })
     }
-    var s = db.createReadStream({
+    s = db.createReadStream({
       gt: 'time!' + (argv.gt || ''),
       lt: 'time!' + (argv.lt || '~')
     })
@@ -341,7 +328,7 @@ var db = level(path.join(datadir, 'db'), { valueEncoding: 'json' });
 
     console.log('Report for %s:', printDate(reportDay))
 
-    var s = db.createReadStream({
+    s = db.createReadStream({
       gt: 'time!' + (strftime('%F', reportDay) || ''),
       lt: 'time!' + (strftime('%F', reportDayTomorrow) || '~')
     })
@@ -363,9 +350,9 @@ var db = level(path.join(datadir, 'db'), { valueEncoding: 'json' });
       sumsByType[row.value.type] ? sumsByType[row.value.type] += elapsed : sumsByType[row.value.type] = elapsed
     }, function end () {
       console.log('')
-      for (var type in sumsByType) {
-        console.log('%s: %s', type, fmt(sumsByType[type]))
-        totalSum += sumsByType[type]
+      for (var stype in sumsByType) {
+        console.log('%s: %s', stype, fmt(sumsByType[stype]))
+        totalSum += sumsByType[stype]
       }
       console.log('\ntotal: %s', fmt(totalSum))
     }))
@@ -401,11 +388,25 @@ function edit (src, cb) {
 }
 
 function usage (code) {
-  var rs = fs.createReadStream(__dirname + '/usage.txt')
+  var rs = fs.createReadStream(path.join(__dirname, 'usage.txt'))
   rs.pipe(process.stdout)
   rs.on('close', function () {
     if (code) process.exit(code)
   })
+}
+
+function onrowstop (row) {
+  var m = argv.message
+  if (m) {
+    if (row.value.message) m = row.value.message + '\n' + m
+    row.value.message = m
+  }
+  row.value.end = strftime('%F %T', d)
+  db.put(row.key, row.value, error)
+}
+
+function onrowrestart (row) {
+  start(new Date(), row.value.message, row.value.type, error)
 }
 
 function pad (s, len) {
@@ -568,7 +569,6 @@ function printMessage (message) {
 
 function addData (obj) {
   var data = minimist(argv['--'])
-  var res = {}
   for (var key in data) {
     if (RESERVED_DATA_ENTRIES.indexOf(key) >= 0) {
       return error('Reserved data key specified: ' + key)
