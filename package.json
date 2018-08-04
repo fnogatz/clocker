@@ -6,7 +6,7 @@
     "clocker": "bin/cmd.js"
   },
   "engines": {
-    "node" : ">= 7.0"
+    "node" : ">= 7"
   },
   "dependencies": {
     "editor": "^0.1.0",
