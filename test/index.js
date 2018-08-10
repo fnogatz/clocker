@@ -21,9 +21,29 @@ test('status', function (t) {
             t.notOk(err)
             t.equal(status, 'stopped', 'stopped again')
 
-            t.end()
+            clocker.close(function () {
+              t.end()
+            })
           })
         })
+      })
+    })
+  })
+})
+
+test('get', function (t) {
+  var clocker = initialize()
+
+  clocker.start('some', function () {
+    clocker.get(function (err, entry) {
+      t.notOk(err)
+
+      t.deepEqual(entry, {
+        type: 'some'
+      })
+
+      clocker.close(function () {
+        t.end()
       })
     })
   })
