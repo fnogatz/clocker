@@ -4,6 +4,61 @@ var rimraf = require('rimraf')
 
 var Clocker = require('../lib/index')
 
+test('start', function (t) {
+  t.plan(4)
+
+  t.test('throws for missing type', function (t) {
+    var clocker = initialize()
+
+    t.throws(function () {
+      clocker.start()
+    })
+
+    clocker.close(function () {
+      t.end()
+    })
+  })
+
+  t.test('returns error for missing type', function (t) {
+    var clocker = initialize()
+
+    clocker.start(function (err, key) {
+      t.ok(err, 'error is set')
+
+      clocker.close(function () {
+        t.end()
+      })
+    })
+  })
+
+  t.test('no date given', function (t) {
+    var clocker = initialize()
+
+    clocker.start('some', function (err, key) {
+      t.notOk(err)
+      t.ok(key, 'key is generated')
+
+      clocker.close(function () {
+        t.end()
+      })
+    })
+  })
+
+  t.test('date given', function (t) {
+    var clocker = initialize()
+
+    var date = new Date()
+    clocker.start('some', date, function (err, key) {
+      t.notOk(err)
+      t.ok(key, 'key is generated')
+
+      clocker.close(function () {
+        t.end()
+      })
+    })
+  })
+})
+
 test('status', function (t) {
   var clocker = initialize()
 
