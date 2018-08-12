@@ -5,7 +5,7 @@ var rimraf = require('rimraf')
 var Clocker = require('../lib/index')
 
 test('start', function (t) {
-  t.plan(4)
+  t.plan(5)
 
   t.test('throws for missing type', function (t) {
     var clocker = initialize()
@@ -57,6 +57,50 @@ test('start', function (t) {
       })
     })
   })
+
+  t.test('data object given', function (t) {
+    t.plan(2)
+
+    t.test('data object given', function (t) {
+      var clocker = initialize()
+
+      var date = new Date()
+      var data = {
+        foo: 'bar'
+      }
+      clocker.start('some', date, data, function (err, key) {
+        t.notOk(err)
+        t.ok(key, 'key is generated')
+
+        clocker.close(function () {
+          t.end()
+        })
+      })
+    })
+
+    t.test('throws for reserved keywords', function (t) {
+      var reservedWords = Clocker.RESERVED_DATA_ENTRIES
+
+      t.plan(reservedWords.length)
+
+      var date = new Date()
+      reservedWords.forEach(function (reserved) {
+        t.test('key "' + reserved + '" not allowed', function (t) {
+          var clocker = initialize()
+          var obj = {}
+          obj[reserved] = true
+
+          clocker.start('some', date, obj, function (err) {
+            t.ok(err)
+
+            clocker.close(function () {
+              t.end()
+            })
+          })
+        })
+      })
+    })
+  })
 })
 
 test('status', function (t) {
@@ -86,77 +130,105 @@ test('status', function (t) {
   })
 })
 
-test('get (no parameter)', function (t) {
-  var clocker = initialize()
+test('get', function (t) {
+  t.plan(4)
 
-  clocker.start('some', function () {
-    clocker.get(function (err, entry) {
-      t.notOk(err)
+  t.test('without parameter', function (t) {
+    var clocker = initialize()
 
-      t.deepEqual(entry, {
-        type: 'some'
-      })
-
-      clocker.close(function () {
-        t.end()
-      })
-    })
-  })
-})
-
-test('get (Date parameter)', function (t) {
-  var clocker = initialize()
-
-  var date1 = new Date('2018-01-01')
-  var date2 = new Date('2018-02-02')
-  clocker.start('some1', date1, function () {
-    clocker.start('some2', date2, function () {
-      clocker.get(date1, function (err, entry) {
+    clocker.start('some', function () {
+      clocker.get(function (err, entry) {
         t.notOk(err)
 
         t.deepEqual(entry, {
-          type: 'some1'
+          type: 'some'
         })
 
-        clocker.get(date2, function (err, entry) {
-          t.notOk(err)
-
-          t.deepEqual(entry, {
-            type: 'some2'
-          })
-
-          clocker.close(function () {
-            t.end()
-          })
+        clocker.close(function () {
+          t.end()
         })
       })
     })
   })
-})
 
-test('get (key as parameter)', function (t) {
-  var clocker = initialize()
+  t.test('Date as parameter', function (t) {
+    var clocker = initialize()
 
-  var date1 = new Date('2018-01-01')
-  clocker.start('some1', date1, function (err, key1) {
-    clocker.start('some2', function (err, key2) {
-      clocker.get(key1, function (err, entry) {
-        t.notOk(err)
-
-        t.deepEqual(entry, {
-          type: 'some1'
-        })
-
-        clocker.get(key2, function (err, entry) {
+    var date1 = new Date('2018-01-01')
+    var date2 = new Date('2018-02-02')
+    clocker.start('some1', date1, function () {
+      clocker.start('some2', date2, function () {
+        clocker.get(date1, function (err, entry) {
           t.notOk(err)
 
           t.deepEqual(entry, {
-            type: 'some2'
+            type: 'some1'
           })
 
-          clocker.close(function () {
-            t.end()
+          clocker.get(date2, function (err, entry) {
+            t.notOk(err)
+
+            t.deepEqual(entry, {
+              type: 'some2'
+            })
+
+            clocker.close(function () {
+              t.end()
+            })
           })
+        })
+      })
+    })
+  })
+
+  t.test('stamp as parameter', function (t) {
+    var clocker = initialize()
+
+    var date1 = new Date('2018-01-01')
+    clocker.start('some1', date1, function (err, key1) {
+      clocker.start('some2', function (err, key2) {
+        clocker.get(key1, function (err, entry) {
+          t.notOk(err)
+
+          t.deepEqual(entry, {
+            type: 'some1'
+          })
+
+          clocker.get(key2, function (err, entry) {
+            t.notOk(err)
+
+            t.deepEqual(entry, {
+              type: 'some2'
+            })
+
+            clocker.close(function () {
+              t.end()
+            })
+          })
+        })
+      })
+    })
+  })
+
+  t.test('get data object', function (t) {
+    var clocker = initialize()
+
+    var data = {
+      foo: 'bar',
+      some: true
+    }
+    clocker.start('some', data, function () {
+      clocker.get(function (err, entry) {
+        t.notOk(err)
+
+        t.deepEqual(entry, {
+          type: 'some',
+          foo: 'bar',
+          some: true
+        })
+
+        clocker.close(function () {
+          t.end()
         })
       })
     })
