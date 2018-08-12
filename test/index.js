@@ -134,6 +134,35 @@ test('get (Date parameter)', function (t) {
   })
 })
 
+test('get (key as parameter)', function (t) {
+  var clocker = initialize()
+
+  var date1 = new Date('2018-01-01')
+  clocker.start('some1', date1, function (err, key1) {
+    clocker.start('some2', function (err, key2) {
+      clocker.get(key1, function (err, entry) {
+        t.notOk(err)
+
+        t.deepEqual(entry, {
+          type: 'some1'
+        })
+
+        clocker.get(key2, function (err, entry) {
+          t.notOk(err)
+
+          t.deepEqual(entry, {
+            type: 'some2'
+          })
+
+          clocker.close(function () {
+            t.end()
+          })
+        })
+      })
+    })
+  })
+})
+
 function initialize () {
   var dataDir = path.join(__dirname, 'datadir')
 
