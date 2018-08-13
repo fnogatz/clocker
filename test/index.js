@@ -5,7 +5,7 @@ var rimraf = require('rimraf')
 var Clocker = require('../lib/index')
 
 test('start', function (t) {
-  t.plan(5)
+  t.plan(6)
 
   t.test('throws for missing type', function (t) {
     var clocker = initialize()
@@ -61,14 +61,13 @@ test('start', function (t) {
   t.test('data object given', function (t) {
     t.plan(2)
 
-    t.test('data object given', function (t) {
+    t.test(function (t) {
       var clocker = initialize()
 
-      var date = new Date()
       var data = {
         foo: 'bar'
       }
-      clocker.start('some', date, data, function (err, key) {
+      clocker.start('some', data, function (err, key) {
         t.notOk(err)
         t.ok(key, 'key is generated')
 
@@ -83,14 +82,13 @@ test('start', function (t) {
 
       t.plan(reservedWords.length)
 
-      var date = new Date()
       reservedWords.forEach(function (reserved) {
         t.test('key "' + reserved + '" not allowed', function (t) {
           var clocker = initialize()
           var obj = {}
           obj[reserved] = true
 
-          clocker.start('some', date, obj, function (err) {
+          clocker.start('some', obj, function (err) {
             t.ok(err)
 
             clocker.close(function () {
@@ -98,6 +96,23 @@ test('start', function (t) {
             })
           })
         })
+      })
+    })
+  })
+
+  t.test('date and data object given', function (t) {
+    var clocker = initialize()
+
+    var date = new Date()
+    var data = {
+      foo: 'bar'
+    }
+    clocker.start('some', date, data, function (err, key) {
+      t.notOk(err)
+      t.ok(key, 'key is generated')
+
+      clocker.close(function () {
+        t.end()
       })
     })
   })
@@ -186,7 +201,11 @@ test('get', function (t) {
 
     var date1 = new Date('2018-01-01')
     clocker.start('some1', date1, function (err, key1) {
+      t.notOk(err)
+
       clocker.start('some2', function (err, key2) {
+        t.notOk(err)
+
         clocker.get(key1, function (err, entry) {
           t.notOk(err)
 
@@ -232,6 +251,39 @@ test('get', function (t) {
         })
       })
     })
+  })
+})
+
+test('restart', function (t) {
+  var clocker = initialize()
+
+  var data = {
+    foo: 'bar',
+    some: true
+  }
+  clocker.start('some', data, function (err, stamp1) {
+    t.notOk(err)
+
+    // wait a second to avoid restarting at the same time
+    setTimeout(function () {
+      clocker.restart(function (err, stamp2) {
+        t.notOk(err)
+        t.ok(stamp1 !== stamp2)
+
+        clocker.get(stamp2, function (err, data2) {
+          t.notOk(err)
+          t.deepEqual(data2, {
+            type: 'some',
+            foo: 'bar',
+            some: true
+          })
+
+          clocker.close(function () {
+            t.end()
+          })
+        })
+      })
+    }, 1000)
   })
 })
 
