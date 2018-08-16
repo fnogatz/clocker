@@ -1,6 +1,7 @@
 var path = require('path')
 var test = require('tape')
 var rimraf = require('rimraf')
+var strftime = require('strftime')
 
 var Clocker = require('../lib/index')
 
@@ -284,6 +285,68 @@ test('restart', function (t) {
         })
       })
     }, 1000)
+  })
+})
+
+test('add', function (t) {
+  t.plan(3)
+
+  t.test('Date arguments', function (t) {
+    var clocker = initialize()
+
+    var start = new Date('2018-01-01')
+    var stop = new Date('2018-01-02')
+    clocker.add(start, stop, 'some', function (err, stamp) {
+      t.notOk(err)
+      t.ok(stamp)
+
+      clocker.close(function () {
+        t.end()
+      })
+    })
+  })
+
+  t.test('String arguments', function (t) {
+    var clocker = initialize()
+
+    clocker.add('yesterday 1:00', '2 minutes ago', 'some', function (err, stamp) {
+      t.notOk(err)
+      t.ok(stamp)
+
+      clocker.close(function () {
+        t.end()
+      })
+    })
+  })
+
+  t.test('with data object given', function (t) {
+    var clocker = initialize()
+
+    var data = {
+      foo: 'bar',
+      some: true
+    }
+    var end = new Date()
+    var endValue = strftime('%F %T', end)
+
+    clocker.add('2 hours ago', end, 'some', data, function (err, stamp) {
+      t.notOk(err)
+      t.ok(stamp)
+
+      clocker.get(stamp, function (err, data2) {
+        t.notOk(err)
+        t.deepEqual(data2, {
+          type: 'some',
+          foo: 'bar',
+          some: true,
+          end: endValue
+        })
+
+        clocker.close(function () {
+          t.end()
+        })
+      })
+    })
   })
 })
 
