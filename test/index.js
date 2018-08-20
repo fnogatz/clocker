@@ -350,6 +350,107 @@ test('add', function (t) {
   })
 })
 
+test('remove', function (t) {
+  t.plan(3)
+
+  t.test('without parameter', function (t) {
+    var clocker = initialize()
+
+    clocker.start('some', function (err, stamp) {
+      t.notOk(err)
+
+      clocker.get(stamp, function (err, entry) {
+        t.notOk(err)
+        t.ok(entry)
+
+        clocker.remove(function (err) {
+          t.notOk(err)
+
+          clocker.get(stamp, function (err, entry) {
+            t.ok(err, 'stamp not found')
+
+            clocker.close(function () {
+              t.end()
+            })
+          })
+        })
+      })
+    })
+  })
+
+  t.test('Date as parameter', function (t) {
+    var clocker = initialize()
+
+    var date1 = new Date('2018-01-01')
+    var date2 = new Date('2018-02-02')
+    clocker.start('some1', date1, function () {
+      clocker.start('some2', date2, function () {
+        clocker.remove(date1, function (err) {
+          t.notOk(err)
+
+          clocker.get(date1, function (err) {
+            t.ok(err)
+
+            clocker.get(date2, function (err) {
+              t.notOk(err)
+
+              clocker.remove(date2, function (err) {
+                t.notOk(err)
+
+                clocker.get(date2, function (err) {
+                  t.ok(err)
+
+                  clocker.close(function () {
+                    t.end()
+                  })
+                })
+              })
+            })
+          })
+        })
+      })
+    })
+  })
+
+  t.test('stamp as parameter', function (t) {
+    var clocker = initialize()
+
+    var date1 = new Date('2018-01-01')
+    var date2 = new Date('2018-02-02')
+    clocker.start('some1', date1, function (err, stamp1) {
+      t.notOk(err)
+
+      clocker.start('some2', date2, function (err, stamp2) {
+        t.notOk(err)
+
+        clocker.remove(stamp1, function (err) {
+          t.notOk(err)
+
+          clocker.get(stamp1, function (err) {
+            t.ok(err)
+
+            clocker.get(stamp2, function (err) {
+              t.notOk(err)
+
+              clocker.remove(stamp2, function (err) {
+                t.notOk(err)
+
+                clocker.get(stamp2, function (err) {
+                  t.ok(err)
+
+                  clocker.close(function () {
+                    t.end()
+                  })
+                })
+              })
+            })
+          })
+        })
+      })
+    })
+  })
+})
+
 function initialize () {
   var dataDir = path.join(__dirname, 'datadir')
 
