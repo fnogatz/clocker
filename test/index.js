@@ -6,36 +6,12 @@ var strftime = require('strftime')
 var Clocker = require('../lib/index')
 
 test('start', function (t) {
-  t.plan(6)
+  t.plan(4)
 
-  t.test('throws for missing type', function (t) {
-    var clocker = initialize()
-
-    t.throws(function () {
-      clocker.start()
-    })
-
-    clocker.close(function () {
-      t.end()
-    })
-  })
-
-  t.test('returns error for missing type', function (t) {
+  t.test('without arguments', function (t) {
     var clocker = initialize()
 
     clocker.start(function (err, key) {
-      t.ok(err, 'error is set')
-
-      clocker.close(function () {
-        t.end()
-      })
-    })
-  })
-
-  t.test('no date given', function (t) {
-    var clocker = initialize()
-
-    clocker.start('some', function (err, key) {
       t.notOk(err)
       t.ok(key, 'key is generated')
 
@@ -49,7 +25,7 @@ test('start', function (t) {
     var clocker = initialize()
 
     var date = new Date()
-    clocker.start('some', date, function (err, key) {
+    clocker.start(date, function (err, key) {
       t.notOk(err)
       t.ok(key, 'key is generated')
 
@@ -60,15 +36,32 @@ test('start', function (t) {
   })
 
   t.test('data object given', function (t) {
-    t.plan(2)
+    t.plan(3)
 
-    t.test(function (t) {
+    t.test('with "type" property given', function (t) {
       var clocker = initialize()
 
       var data = {
-        foo: 'bar'
+        type: 'some'
       }
-      clocker.start('some', data, function (err, key) {
+      clocker.start(data, function (err, key) {
+        t.notOk(err)
+        t.ok(key, 'key is generated')
+
+        clocker.close(function () {
+          t.end()
+        })
+      })
+    })
+
+    t.test('some data object given', function (t) {
+      var clocker = initialize()
+
+      var data = {
+        foo: 'bar',
+        other: 'some'
+      }
+      clocker.start(data, function (err, key) {
         t.notOk(err)
         t.ok(key, 'key is generated')
 
@@ -89,7 +82,7 @@ test('start', function (t) {
           var obj = {}
           obj[reserved] = true
 
-          clocker.start('some', obj, function (err) {
+          clocker.start(obj, function (err) {
             t.ok(err)
 
             clocker.close(function () {
@@ -108,7 +101,7 @@ test('start', function (t) {
     var data = {
       foo: 'bar'
     }
-    clocker.start('some', date, data, function (err, key) {
+    clocker.start(date, data, function (err, key) {
       t.notOk(err)
       t.ok(key, 'key is generated')
 
@@ -126,7 +119,7 @@ test('status', function (t) {
     t.notOk(err)
     t.equal(status, 'stopped', 'stopped at first')
 
-    clocker.start('some', function () {
+    clocker.start(function () {
       clocker.status(function (err, status) {
         t.notOk(err)
         t.ok(/^elapsed time:/.test(status), 'started')
@@ -152,13 +145,12 @@ test('get', function (t) {
   t.test('without parameter', function (t) {
     var clocker = initialize()
 
-    clocker.start('some', function () {
+    clocker.start(function () {
       clocker.get(function (err, entry) {
         t.notOk(err)
 
-        t.deepEqual(entry, {
-          type: 'some'
-        })
+        var emptyObject = {}
+        t.deepEqual(entry, emptyObject)
 
         clocker.close(function () {
           t.end()
@@ -172,20 +164,20 @@ test('get', function (t) {
 
     var date1 = new Date('2018-01-01')
     var date2 = new Date('2018-02-02')
-    clocker.start('some1', date1, function () {
-      clocker.start('some2', date2, function () {
+    clocker.start({ foo: 'bar1' }, date1, function () {
+      clocker.start({ foo: 'bar2' }, date2, function () {
         clocker.get(date1, function (err, entry) {
           t.notOk(err)
 
           t.deepEqual(entry, {
-            type: 'some1'
+            foo: 'bar1'
           })
 
           clocker.get(date2, function (err, entry) {
             t.notOk(err)
 
             t.deepEqual(entry, {
-              type: 'some2'
+              foo: 'bar2'
             })
 
             clocker.close(function () {
@@ -201,24 +193,24 @@ test('get', function (t) {
     var clocker = initialize()
 
     var date1 = new Date('2018-01-01')
-    clocker.start('some1', date1, function (err, key1) {
+    clocker.start({ foo: 'bar1' }, date1, function (err, key1) {
       t.notOk(err)
 
-      clocker.start('some2', function (err, key2) {
+      clocker.start({ foo: 'bar2' }, function (err, key2) {
         t.notOk(err)
 
         clocker.get(key1, function (err, entry) {
           t.notOk(err)
 
           t.deepEqual(entry, {
-            type: 'some1'
+            foo: 'bar1'
           })
 
           clocker.get(key2, function (err, entry) {
             t.notOk(err)
 
             t.deepEqual(entry, {
-              type: 'some2'
+              foo: 'bar2'
             })
 
             clocker.close(function () {
@@ -237,12 +229,11 @@ test('get', function (t) {
       foo: 'bar',
       some: true
     }
-    clocker.start('some', data, function () {
+    clocker.start(data, function () {
       clocker.get(function (err, entry) {
         t.notOk(err)
 
         t.deepEqual(entry, {
-          type: 'some',
           foo: 'bar',
           some: true
         })
@@ -262,7 +253,7 @@ test('restart', function (t) {
     foo: 'bar',
     some: true
   }
-  clocker.start('some', data, function (err, stamp1) {
+  clocker.start(data, function (err, stamp1) {
     t.notOk(err)
 
     // wait a second to avoid restarting at the same time
@@ -274,7 +265,6 @@ test('restart', function (t) {
         clocker.get(stamp2, function (err, data2) {
           t.notOk(err)
           t.deepEqual(data2, {
-            type: 'some',
             foo: 'bar',
             some: true
           })
@@ -296,7 +286,7 @@ test('add', function (t) {
 
     var start = new Date('2018-01-01')
     var stop = new Date('2018-01-02')
-    clocker.add(start, stop, 'some', function (err, stamp) {
+    clocker.add(start, stop, function (err, stamp) {
       t.notOk(err)
       t.ok(stamp)
 
@@ -309,7 +299,7 @@ test('add', function (t) {
   t.test('String arguments', function (t) {
     var clocker = initialize()
 
-    clocker.add('yesterday 1:00', '2 minutes ago', 'some', function (err, stamp) {
+    clocker.add('yesterday 1:00', '2 minutes ago', function (err, stamp) {
       t.notOk(err)
       t.ok(stamp)
 
@@ -329,14 +319,13 @@ test('add', function (t) {
     var end = new Date()
     var endValue = strftime('%F %T', end)
 
-    clocker.add('2 hours ago', end, 'some', data, function (err, stamp) {
+    clocker.add('2 hours ago', end, data, function (err, stamp) {
       t.notOk(err)
       t.ok(stamp)
 
       clocker.get(stamp, function (err, data2) {
         t.notOk(err)
         t.deepEqual(data2, {
-          type: 'some',
           foo: 'bar',
           some: true,
           end: endValue
@@ -356,7 +345,7 @@ test('remove', function (t) {
   t.test('without parameter', function (t) {
     var clocker = initialize()
 
-    clocker.start('some', function (err, stamp) {
+    clocker.start(function (err, stamp) {
       t.notOk(err)
 
       clocker.get(stamp, function (err, entry) {
@@ -383,8 +372,8 @@ test('remove', function (t) {
 
     var date1 = new Date('2018-01-01')
     var date2 = new Date('2018-02-02')
-    clocker.start('some1', date1, function () {
-      clocker.start('some2', date2, function () {
+    clocker.start(date1, function () {
+      clocker.start(date2, function () {
         clocker.remove(date1, function (err) {
           t.notOk(err)
 
@@ -417,10 +406,10 @@ test('remove', function (t) {
 
     var date1 = new Date('2018-01-01')
     var date2 = new Date('2018-02-02')
-    clocker.start('some1', date1, function (err, stamp1) {
+    clocker.start(date1, function (err, stamp1) {
       t.notOk(err)
 
-      clocker.start('some2', date2, function (err, stamp2) {
+      clocker.start(date2, function (err, stamp2) {
         t.notOk(err)
 
         clocker.remove(stamp1, function (err) {
