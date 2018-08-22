@@ -22,15 +22,32 @@ test('start', function (t) {
   })
 
   t.test('date given', function (t) {
-    var clocker = initialize()
+    t.plan(2)
 
-    var date = new Date()
-    clocker.start(date, function (err, key) {
-      t.notOk(err)
-      t.ok(key, 'key is generated')
+    t.test('as Date', function (t) {
+      var clocker = initialize()
 
-      clocker.close(function () {
-        t.end()
+      var date = new Date()
+      clocker.start(date, function (err, key) {
+        t.notOk(err)
+        t.ok(key, 'key is generated')
+
+        clocker.close(function () {
+          t.end()
+        })
+      })
+    })
+
+    t.test('as String', function (t) {
+      var clocker = initialize()
+
+      clocker.start('2 hours ago', function (err, key) {
+        t.notOk(err)
+        t.ok(key, 'key is generated')
+
+        clocker.close(function () {
+          t.end()
+        })
       })
     })
   })
@@ -101,7 +118,7 @@ test('start', function (t) {
     var data = {
       foo: 'bar'
     }
-    clocker.start(date, data, function (err, key) {
+    clocker.start(data, date, function (err, key) {
       t.notOk(err)
       t.ok(key, 'key is generated')
 
@@ -113,26 +130,46 @@ test('start', function (t) {
 })
 
 test('status', function (t) {
-  var clocker = initialize()
+  t.plan(2)
 
-  clocker.status(function (err, status) {
-    t.notOk(err)
-    t.equal(status, 'stopped', 'stopped at first')
+  t.test('start+stop', function (t) {
+    var clocker = initialize()
 
-    clocker.start(function () {
+    clocker.status(function (err, status) {
+      t.notOk(err)
+      t.equal(status, 'stopped', 'stopped at first')
+
+      clocker.start(function () {
+        clocker.status(function (err, status) {
+          t.notOk(err)
+          t.ok(/^elapsed time:/.test(status), 'started')
+
+          clocker.stop(function () {
+            clocker.status(function (err, status) {
+              t.notOk(err)
+              t.equal(status, 'stopped', 'stopped again')
+
+              clocker.close(function () {
+                t.end()
+              })
+            })
+          })
+        })
+      })
+    })
+  })
+
+  t.test('correct output', function (t) {
+    var clocker = initialize()
+
+    clocker.start('2 hours ago', function () {
       clocker.status(function (err, status) {
         t.notOk(err)
         t.ok(/^elapsed time:/.test(status), 'started')
+        t.ok(/^elapsed time: 02:00:0[01]$/.test(status), 'correct output')
 
-        clocker.stop(function () {
-          clocker.status(function (err, status) {
-            t.notOk(err)
-            t.equal(status, 'stopped', 'stopped again')
-
-            clocker.close(function () {
-              t.end()
-            })
-          })
+        clocker.close(function () {
+          t.end()
         })
       })
     })
@@ -440,6 +477,38 @@ test('remove', function (t) {
   })
 })
 
+test('data', function (t) {
+  t.plan(1)
+
+  t.test('without parameter', function (t) {
+    var clocker = initialize()
+
+    var value = {
+      foo: 'bar'
+    }
+    clocker.start(value, '2 hours ago', function (err, stamp) {
+      t.notOk(err)
+
+      clocker.data(function (err, data) {
+        t.notOk(err)
+
+        var reference = dataObject({
+          key: stamp,
+          value: value,
+          start: new Date(stamp * 1000),
+          end: 'NOW'
+        })
+
+        t.deepLooseEqual(data, [ reference ])
+
+        clocker.close(function () {
+          t.end()
+        })
+      })
+    })
+  })
+})
+
 function initialize () {
   var dataDir = path.join(__dirname, 'datadir')
 
@@ -452,4 +521,14 @@ function initialize () {
   })
 
   return clocker
+}
+
+function dataObject (obj) {
+  var end = obj.end || new Date()
+  if (end === 'NOW') {
+    end = new Date()
+  }
+
+  obj.elapsed = Math.floor((end - obj.start) / 1000)
+  return obj
 }
