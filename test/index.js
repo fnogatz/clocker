@@ -478,7 +478,7 @@ test('remove', function (t) {
 })
 
 test('data', function (t) {
-  t.plan(1)
+  t.plan(3)
 
   t.test('without parameter', function (t) {
     var clocker = initialize()
@@ -503,6 +503,144 @@ test('data', function (t) {
 
         clocker.close(function () {
           t.end()
+        })
+      })
+    })
+  })
+
+  t.test('empty object parameter', function (t) {
+    var clocker = initialize()
+
+    var value = {
+      foo: 'bar'
+    }
+    clocker.start(value, '2 hours ago', function (err, stamp) {
+      t.notOk(err)
+
+      clocker.data({}, function (err, data) {
+        t.notOk(err)
+
+        var reference = dataObject({
+          key: stamp,
+          value: value,
+          start: new Date(stamp * 1000),
+          end: 'NOW'
+        })
+
+        t.deepLooseEqual(data, [ reference ])
+
+        clocker.close(function () {
+          t.end()
+        })
+      })
+    })
+  })
+
+  t.test('filter', function (t) {
+    t.plan(2)
+
+    t.test('gt', function (t) {
+      t.plan(2)
+
+      t.test(function (t) {
+        var clocker = initialize()
+
+        var value = {
+          foo: 'bar'
+        }
+        clocker.start(value, '2 hours ago', function (err, stamp) {
+          t.notOk(err)
+
+          clocker.data({ gt: '3 hours ago' }, function (err, data) {
+            t.notOk(err)
+
+            var reference = dataObject({
+              key: stamp,
+              value: value,
+              start: new Date(stamp * 1000),
+              end: 'NOW'
+            })
+
+            t.deepLooseEqual(data, [ reference ])
+
+            clocker.close(function () {
+              t.end()
+            })
+          })
+        })
+      })
+
+      t.test(function (t) {
+        var clocker = initialize()
+
+        var value = {
+          foo: 'bar'
+        }
+        clocker.start(value, '2 hours ago', function (err, stamp) {
+          t.notOk(err)
+
+          clocker.data({ gt: '1 hours ago' }, function (err, data) {
+            t.notOk(err)
+
+            t.deepLooseEqual(data, [], 'empty result')
+
+            clocker.close(function () {
+              t.end()
+            })
+          })
+        })
+      })
+    })
+
+    t.test('lt', function (t) {
+      t.plan(2)
+
+      t.test(function (t) {
+        var clocker = initialize()
+
+        var value = {
+          foo: 'bar'
+        }
+        clocker.start(value, '2 hours ago', function (err, stamp) {
+          t.notOk(err)
+
+          clocker.data({ lt: '1 hours ago' }, function (err, data) {
+            t.notOk(err)
+
+            var reference = dataObject({
+              key: stamp,
+              value: value,
+              start: new Date(stamp * 1000),
+              end: 'NOW'
+            })
+
+            t.deepLooseEqual(data, [ reference ])
+
+            clocker.close(function () {
+              t.end()
+            })
+          })
+        })
+      })
+
+      t.test(function (t) {
+        var clocker = initialize()
+
+        var value = {
+          foo: 'bar'
+        }
+        clocker.start(value, '2 hours ago', function (err, stamp) {
+          t.notOk(err)
+
+          clocker.data({ lt: '3 hours ago' }, function (err, data) {
+            t.notOk(err)
+
+            t.deepLooseEqual(data, [], 'empty result')
+
+            clocker.close(function () {
+              t.end()
+            })
+          })
         })
       })
     })
