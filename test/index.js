@@ -181,12 +181,9 @@ test('get', function (t) {
   t.test('without parameter', function (t) {
     var clocker = initialize()
 
-    clocker.start(function (err, stamp) {
-      t.notOk(err)
-
+    clocker.start(function (_err, stamp) {
       clocker.get(function (err, entry) {
         t.notOk(err)
-
         t.deepEqual(entry, mockup(stamp))
 
         clocker.close(function () {
@@ -205,15 +202,10 @@ test('get', function (t) {
     var date2 = new Date('2018-02-02')
     var value2 = { foo: 'bar2' }
 
-    clocker.start(value1, date1, function (err, stamp1) {
-      t.notOk(err)
-
-      clocker.start(value2, date2, function (err, stamp2) {
-        t.notOk(err)
-
+    clocker.start(value1, date1, function (_err, stamp1) {
+      clocker.start(value2, date2, function (_err, stamp2) {
         clocker.get(date1, function (err, entry) {
           t.notOk(err)
-
           t.deepEqual(entry, mockup(stamp1, value1))
 
           clocker.get(date2, function (err, entry) {
@@ -237,15 +229,10 @@ test('get', function (t) {
     var value1 = { foo: 'bar1' }
     var value2 = { foo: 'bar2' }
 
-    clocker.start(value1, date1, function (err, key1) {
-      t.notOk(err)
-
-      clocker.start(value2, function (err, key2) {
-        t.notOk(err)
-
+    clocker.start(value1, date1, function (_err, key1) {
+      clocker.start(value2, function (_err, key2) {
         clocker.get(key1, function (err, entry) {
           t.notOk(err)
-
           t.deepEqual(entry, mockup(key1, value1))
 
           clocker.get(key2, function (err, entry) {
@@ -269,12 +256,9 @@ test('get', function (t) {
       foo: 'bar',
       some: true
     }
-    clocker.start(data, function (err, key) {
-      t.notOk(err)
-
+    clocker.start(data, function (_err, key) {
       clocker.get(function (err, entry) {
         t.notOk(err)
-
         t.deepEqual(entry, mockup(key, data))
 
         clocker.close(function () {
@@ -377,16 +361,11 @@ test('remove', function (t) {
   t.test('without parameter', function (t) {
     var clocker = initialize()
 
-    clocker.start(function (err, stamp) {
-      t.notOk(err)
-
-      clocker.get(stamp, function (err, entry) {
-        t.notOk(err)
+    clocker.start(function (_err, stamp) {
+      clocker.get(stamp, function (_err, entry) {
         t.ok(entry)
 
-        clocker.remove(function (err) {
-          t.notOk(err)
-
+        clocker.remove(function (_err) {
           clocker.get(stamp, function (err, entry) {
             t.ok(err, 'stamp not found')
 
@@ -406,18 +385,12 @@ test('remove', function (t) {
     var date2 = new Date('2018-02-02')
     clocker.start(date1, function () {
       clocker.start(date2, function () {
-        clocker.remove(date1, function (err) {
-          t.notOk(err)
-
+        clocker.remove(date1, function (_err) {
           clocker.get(date1, function (err) {
             t.ok(err)
 
-            clocker.get(date2, function (err) {
-              t.notOk(err)
-
-              clocker.remove(date2, function (err) {
-                t.notOk(err)
-
+            clocker.get(date2, function (_err) {
+              clocker.remove(date2, function (_err) {
                 clocker.get(date2, function (err) {
                   t.ok(err)
 
@@ -438,24 +411,12 @@ test('remove', function (t) {
 
     var date1 = new Date('2018-01-01')
     var date2 = new Date('2018-02-02')
-    clocker.start(date1, function (err, stamp1) {
-      t.notOk(err)
-
-      clocker.start(date2, function (err, stamp2) {
-        t.notOk(err)
-
-        clocker.remove(stamp1, function (err) {
-          t.notOk(err)
-
-          clocker.get(stamp1, function (err) {
-            t.ok(err)
-
-            clocker.get(stamp2, function (err) {
-              t.notOk(err)
-
-              clocker.remove(stamp2, function (err) {
-                t.notOk(err)
-
+    clocker.start(date1, function (_err, stamp1) {
+      clocker.start(date2, function (_err, stamp2) {
+        clocker.remove(stamp1, function (_err) {
+          clocker.get(stamp1, function (_err) {
+            clocker.get(stamp2, function (_err) {
+              clocker.remove(stamp2, function (_err) {
                 clocker.get(stamp2, function (err) {
                   t.ok(err)
 
@@ -481,9 +442,7 @@ test('data', function (t) {
     var value = {
       foo: 'bar'
     }
-    clocker.start(value, '2 hours ago', function (err, stamp) {
-      t.notOk(err)
-
+    clocker.start(value, '2 hours ago', function (_err, stamp) {
       clocker.data(function (err, data) {
         t.notOk(err)
 
@@ -504,9 +463,7 @@ test('data', function (t) {
     var value = {
       foo: 'bar'
     }
-    clocker.start(value, '2 hours ago', function (err, stamp) {
-      t.notOk(err)
-
+    clocker.start(value, '2 hours ago', function (_err, stamp) {
       clocker.data({}, function (err, data) {
         t.notOk(err)
 
@@ -533,9 +490,7 @@ test('data', function (t) {
         var value = {
           foo: 'bar'
         }
-        clocker.start(value, '2 hours ago', function (err, stamp) {
-          t.notOk(err)
-
+        clocker.start(value, '2 hours ago', function (_err, stamp) {
           clocker.data({ gt: '3 hours ago' }, function (err, data) {
             t.notOk(err)
 
@@ -556,9 +511,7 @@ test('data', function (t) {
         var value = {
           foo: 'bar'
         }
-        clocker.start(value, '2 hours ago', function (err, stamp) {
-          t.notOk(err)
-
+        clocker.start(value, '2 hours ago', function (_err, stamp) {
           clocker.data({ gt: '1 hours ago' }, function (err, data) {
             t.notOk(err)
 
@@ -623,8 +576,8 @@ test('data', function (t) {
     t.test('test', function (t) {
       var clocker = initialize()
 
-      clocker.add('08:00', '10:00', { type: 't1' }, function (err, stamp1) {
-        clocker.add('11:00', '13:00', { type: 't2' }, function (err, stamp2) {
+      clocker.add('08:00', '10:00', { type: 't1' }, function (_err, stamp1) {
+        clocker.add('11:00', '13:00', { type: 't2' }, function (_err, stamp2) {
           var reference1 = mockup(stamp1, { type: 't1' })
           var reference2 = mockup(stamp2, { type: 't2' })
 
