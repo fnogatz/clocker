@@ -1,7 +1,6 @@
 var path = require('path')
 var test = require('tape')
 var rimraf = require('rimraf')
-var strftime = require('strftime')
 
 var Clocker = require('../lib/index')
 
@@ -182,12 +181,13 @@ test('get', function (t) {
   t.test('without parameter', function (t) {
     var clocker = initialize()
 
-    clocker.start(function () {
+    clocker.start(function (err, stamp) {
+      t.notOk(err)
+
       clocker.get(function (err, entry) {
         t.notOk(err)
 
-        var emptyObject = {}
-        t.deepEqual(entry, emptyObject)
+        t.deepEqual(entry, mockup(stamp))
 
         clocker.close(function () {
           t.end()
@@ -200,22 +200,26 @@ test('get', function (t) {
     var clocker = initialize()
 
     var date1 = new Date('2018-01-01')
+    var value1 = { foo: 'bar1' }
+
     var date2 = new Date('2018-02-02')
-    clocker.start({ foo: 'bar1' }, date1, function () {
-      clocker.start({ foo: 'bar2' }, date2, function () {
+    var value2 = { foo: 'bar2' }
+
+    clocker.start(value1, date1, function (err, stamp1) {
+      t.notOk(err)
+
+      clocker.start(value2, date2, function (err, stamp2) {
+        t.notOk(err)
+
         clocker.get(date1, function (err, entry) {
           t.notOk(err)
 
-          t.deepEqual(entry, {
-            foo: 'bar1'
-          })
+          t.deepEqual(entry, mockup(stamp1, value1))
 
           clocker.get(date2, function (err, entry) {
             t.notOk(err)
 
-            t.deepEqual(entry, {
-              foo: 'bar2'
-            })
+            t.deepEqual(entry, mockup(stamp2, value2))
 
             clocker.close(function () {
               t.end()
@@ -230,25 +234,24 @@ test('get', function (t) {
     var clocker = initialize()
 
     var date1 = new Date('2018-01-01')
-    clocker.start({ foo: 'bar1' }, date1, function (err, key1) {
+    var value1 = { foo: 'bar1' }
+    var value2 = { foo: 'bar2' }
+
+    clocker.start(value1, date1, function (err, key1) {
       t.notOk(err)
 
-      clocker.start({ foo: 'bar2' }, function (err, key2) {
+      clocker.start(value2, function (err, key2) {
         t.notOk(err)
 
         clocker.get(key1, function (err, entry) {
           t.notOk(err)
 
-          t.deepEqual(entry, {
-            foo: 'bar1'
-          })
+          t.deepEqual(entry, mockup(key1, value1))
 
           clocker.get(key2, function (err, entry) {
             t.notOk(err)
 
-            t.deepEqual(entry, {
-              foo: 'bar2'
-            })
+            t.deepEqual(entry, mockup(key2, value2))
 
             clocker.close(function () {
               t.end()
@@ -266,14 +269,13 @@ test('get', function (t) {
       foo: 'bar',
       some: true
     }
-    clocker.start(data, function () {
+    clocker.start(data, function (err, key) {
+      t.notOk(err)
+
       clocker.get(function (err, entry) {
         t.notOk(err)
 
-        t.deepEqual(entry, {
-          foo: 'bar',
-          some: true
-        })
+        t.deepEqual(entry, mockup(key, data))
 
         clocker.close(function () {
           t.end()
@@ -301,10 +303,8 @@ test('restart', function (t) {
 
         clocker.get(stamp2, function (err, data2) {
           t.notOk(err)
-          t.deepEqual(data2, {
-            foo: 'bar',
-            some: true
-          })
+
+          t.deepEqual(data2, mockup(stamp2, data))
 
           clocker.close(function () {
             t.end()
@@ -354,7 +354,6 @@ test('add', function (t) {
       some: true
     }
     var end = new Date()
-    var endValue = strftime('%F %T', end)
 
     clocker.add('2 hours ago', end, data, function (err, stamp) {
       t.notOk(err)
@@ -362,11 +361,7 @@ test('add', function (t) {
 
       clocker.get(stamp, function (err, data2) {
         t.notOk(err)
-        t.deepEqual(data2, {
-          foo: 'bar',
-          some: true,
-          end: endValue
-        })
+        t.deepEqual(data2, mockup(stamp, data))
 
         clocker.close(function () {
           t.end()
@@ -492,12 +487,7 @@ test('data', function (t) {
       clocker.data(function (err, data) {
         t.notOk(err)
 
-        var reference = dataObject({
-          key: stamp,
-          value: value,
-          start: new Date(stamp * 1000),
-          end: 'NOW'
-        })
+        var reference = mockup(stamp, value)
 
         t.deepLooseEqual(data, [ reference ])
 
@@ -520,12 +510,7 @@ test('data', function (t) {
       clocker.data({}, function (err, data) {
         t.notOk(err)
 
-        var reference = dataObject({
-          key: stamp,
-          value: value,
-          start: new Date(stamp * 1000),
-          end: 'NOW'
-        })
+        var reference = mockup(stamp, value)
 
         t.deepLooseEqual(data, [ reference ])
 
@@ -537,7 +522,7 @@ test('data', function (t) {
   })
 
   t.test('filter', function (t) {
-    t.plan(2)
+    t.plan(3)
 
     t.test('gt', function (t) {
       t.plan(2)
@@ -554,12 +539,7 @@ test('data', function (t) {
           clocker.data({ gt: '3 hours ago' }, function (err, data) {
             t.notOk(err)
 
-            var reference = dataObject({
-              key: stamp,
-              value: value,
-              start: new Date(stamp * 1000),
-              end: 'NOW'
-            })
+            var reference = mockup(stamp, value)
 
             t.deepLooseEqual(data, [ reference ])
 
@@ -607,12 +587,7 @@ test('data', function (t) {
           clocker.data({ lt: '1 hours ago' }, function (err, data) {
             t.notOk(err)
 
-            var reference = dataObject({
-              key: stamp,
-              value: value,
-              start: new Date(stamp * 1000),
-              end: 'NOW'
-            })
+            var reference = mockup(stamp, value)
 
             t.deepLooseEqual(data, [ reference ])
 
@@ -644,6 +619,43 @@ test('data', function (t) {
         })
       })
     })
+
+    t.test('test', function (t) {
+      var clocker = initialize()
+
+      clocker.add('08:00', '10:00', { type: 't1' }, function (err, stamp1) {
+        clocker.add('11:00', '13:00', { type: 't2' }, function (err, stamp2) {
+          var reference1 = mockup(stamp1, { type: 't1' })
+          var reference2 = mockup(stamp2, { type: 't2' })
+
+          t.plan(2)
+
+          t.test(function (t) {
+            clocker.data({
+              test: (entry) => entry.data.type === 't1'
+            }, function (err, data) {
+              t.notOk(err)
+
+              t.deepLooseEqual(data, [ reference1 ])
+
+              t.end()
+            })
+          })
+
+          t.test(function (t) {
+            clocker.data({
+              test: (entry) => entry.data.type === 't2'
+            }, function (err, data) {
+              t.notOk(err)
+
+              t.deepLooseEqual(data, [ reference2 ])
+
+              t.end()
+            })
+          })
+        })
+      })
+    })
   })
 })
 
@@ -661,12 +673,21 @@ function initialize () {
   return clocker
 }
 
-function dataObject (obj) {
-  var end = obj.end || new Date()
-  if (end === 'NOW') {
-    end = new Date()
+function mockup (stamp, value, obj) {
+  obj = obj || {}
+  obj.data = value || {}
+
+  if (!obj.key) {
+    obj.key = stamp
   }
 
-  obj.elapsed = Math.floor((end - obj.start) / 1000)
+  if (!obj.start && obj.key) {
+    obj.start = new Date(obj.key * 1000)
+  }
+
+  obj.end = obj.end || 'NOW'
+
+  obj.elapsed = Math.floor(((obj.end === 'NOW' ? new Date() : obj.end) - obj.start) / 1000)
+
   return obj
 }
