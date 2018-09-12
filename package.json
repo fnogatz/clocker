@@ -17,7 +17,8 @@
     "mkdirp": "^0.3.5",
     "parse-messy-time": "^1.2.1",
     "strftime": "~0.6.2",
-    "through": "^2.3.7"
+    "through": "^2.3.7",
+    "through2": "^2.0.3"
   },
   "devDependencies": {
     "rimraf": "^2.6.2",
