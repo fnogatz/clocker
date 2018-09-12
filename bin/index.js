@@ -2,6 +2,7 @@
 
 var path = require('path')
 var program = require('commander')
+var strftime = require('strftime')
 var Clocker = require('../lib/index')
 
 program
@@ -16,14 +17,37 @@ program
   .option('-m, --message <value>')
   .action(start)
 
+program
+  .command('list')
+  .description('show data entries')
+  .option('-d, --datadir <path>')
+  .action(list)
+
 program.parse(process.argv)
 
 function start (cmd) {
-  var clocker = new Clocker({
-    dir: dir(cmd)
-  })
+  var clocker = initialize(cmd)
 
   clocker.start({}, new Date(), started)
+}
+
+function list (cmd) {
+  var clocker = initialize(cmd)
+
+  clocker.dataStream({}).on('error', function (err) {
+    console.log(err)
+    process.exit(1)
+  }).on('end', function () {
+    process.exit(0)
+  }).on('data', function (entry) {
+    printEntry(entry)
+  })
+}
+
+function initialize (cmd) {
+  return new Clocker({
+    dir: dir(cmd)
+  })
 }
 
 function dir (cmd) {
@@ -44,4 +68,17 @@ function started (err, stamp) {
 
   console.log('Started: ' + stamp)
   process.exit(0)
+}
+
+function printEntry (data) {
+  console.log(
+    '%s  %s  [ %s - %s ]  (%s)%s%s',
+    data.key,
+    strftime('%F', data.start),
+    strftime('%T', data.start),
+    (data.end === 'NOW' ? 'NOW' : strftime('%T', data.end)),
+    Clocker.formatElapsed(data.elapsed),
+    (data.type ? '  [' + data.type + ']' : ''),
+    (data.archive ? ' A' : '')
+  )
 }
