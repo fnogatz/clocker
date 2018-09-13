@@ -47,6 +47,13 @@ program
   .action(get)
 
 program
+  .command('remove [stamp]')
+  .alias('rm')
+  .description('remove an entry')
+  .option('-d, --datadir <path>')
+  .action(remove)
+
+program
   .command('help', {
     noHelp: true
   })
@@ -57,7 +64,7 @@ program.on('command:*', function () {
   process.exit(1)
 })
 
-if (argvs[0].length === 2) {
+if (!argvs[0].slice(2).length) {
   program.help()
 }
 
@@ -145,7 +152,19 @@ function get (stamp, cmd) {
   })
 }
 
+function remove (stamp, cmd) {
+  var clocker = initialize(cmd)
+  clocker.remove(stamp, function (err) {
+    ifError(err)
+    success()
+  })
+}
+
 function initialize (cmd) {
+  if (typeof cmd !== 'object') {
+    program.outputHelp()
+    process.exit(1)
+  }
   return new Clocker({
     dir: dir(cmd)
   })
