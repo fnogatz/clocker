@@ -5,6 +5,8 @@ var program = require('commander')
 var strftime = require('strftime')
 var Clocker = require('../lib/index')
 
+var argvs = splitArgvs(process.argv)
+
 program
   .version(require('../package.json').version)
   .description('track project hours')
@@ -21,6 +23,7 @@ program
   .command('stop [stamp]')
   .description('stop the clock')
   .option('-d, --datadir <path>')
+  .option('-m, --message <value>')
   .action(stop)
 
 program
@@ -31,7 +34,26 @@ program
   .option('-v, --verbose', 'also show clocked messages')
   .action(list)
 
-var argvs = splitArgvs(process.argv)
+program
+  .command('status')
+  .description('show the elapsed time')
+  .option('-d, --datadir <path>')
+  .action(status)
+
+program
+  .command('help', {
+    noHelp: true
+  })
+  .action(help)
+
+program.on('command:*', function () {
+  console.error('Invalid command: %s\nSee --help for a list of available commands.', argvs[0].slice(2).join(' '))
+  process.exit(1)
+})
+
+if (argvs[0].length === 2) {
+  program.help()
+}
 
 program.parse(argvs[0])
 
@@ -45,6 +67,10 @@ function splitArgvs (argv) {
     }
     return prev
   }, [[]])
+}
+
+function help () {
+  program.help()
 }
 
 function start (cmd) {
@@ -70,7 +96,15 @@ function start (cmd) {
 
 function stop (stamp, cmd) {
   var clocker = initialize(cmd)
-  clocker.stop(stamp, stopped)
+
+  var data = {}
+  ;['message'].forEach(function (prop) {
+    if (cmd[prop]) {
+      data[prop] = cmd[prop]
+    }
+  })
+
+  clocker.stop(stamp, data, stopped)
 }
 
 function list (cmd) {
@@ -87,6 +121,19 @@ function list (cmd) {
     if (cmd.verbose) {
       printMessage(entry.data.message)
     }
+  })
+}
+
+function status (cmd) {
+  var clocker = initialize(cmd)
+  clocker.status(function (err, status) {
+    if (err) {
+      console.log(err)
+      process.exit(1)
+    }
+
+    console.log(status)
+    process.exit(0)
   })
 }
 
