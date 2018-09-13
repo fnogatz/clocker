@@ -25,7 +25,21 @@ program
   .option('-v, --verbose', 'also show clocked messages')
   .action(list)
 
-program.parse(process.argv)
+var argvs = splitArgvs(process.argv)
+
+program.parse(argvs[0])
+
+function splitArgvs (argv) {
+  // splits array on '--' value into array of arrays
+  return argv.reduceRight((prev, curr) => {
+    if (curr === '--') {
+      prev.unshift([])
+    } else {
+      prev[0].unshift(curr)
+    }
+    return prev
+  }, [[]])
+}
 
 function start (cmd) {
   var clocker = initialize(cmd)
@@ -36,6 +50,14 @@ function start (cmd) {
       data[prop] = cmd[prop]
     }
   })
+
+  if (argvs[1]) {
+    argvs[1].forEach(function (prop) {
+      prop = prop.trimLeft('-')
+      var [key, value] = prop.split('=')
+      data[key] = value
+    })
+  }
 
   clocker.start(data, new Date(), started)
 }
