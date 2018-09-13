@@ -27,6 +27,12 @@ program
   .action(stop)
 
 program
+  .command('status [stamp]')
+  .description('show the elapsed time')
+  .option('-d, --datadir <path>')
+  .action(status)
+
+program
   .command('list')
   .alias('ls')
   .description('show data entries')
@@ -35,10 +41,10 @@ program
   .action(list)
 
 program
-  .command('status')
-  .description('show the elapsed time')
+  .command('get [stamp]')
+  .description('get the raw data')
   .option('-d, --datadir <path>')
-  .action(status)
+  .action(get)
 
 program
   .command('help', {
@@ -111,8 +117,7 @@ function list (cmd) {
   var clocker = initialize(cmd)
 
   clocker.dataStream({}).on('error', function (err) {
-    console.log(err)
-    process.exit(1)
+    ifError(err)
   }).on('end', function () {
     process.exit(0)
   }).on('data', function (entry) {
@@ -124,16 +129,19 @@ function list (cmd) {
   })
 }
 
-function status (cmd) {
+function status (stamp, cmd) {
   var clocker = initialize(cmd)
-  clocker.status(function (err, status) {
-    if (err) {
-      console.log(err)
-      process.exit(1)
-    }
+  clocker.status(stamp, function (err, status) {
+    ifError(err)
+    success(status)
+  })
+}
 
-    console.log(status)
-    process.exit(0)
+function get (stamp, cmd) {
+  var clocker = initialize(cmd)
+  clocker.get(stamp, function (err, entry) {
+    ifError(err)
+    success(entry.data)
   })
 }
 
@@ -154,23 +162,13 @@ function dir (cmd) {
 }
 
 function started (err, stamp) {
-  if (err) {
-    console.log(err)
-    return process.exit(1)
-  }
-
-  console.log('Started: ' + stamp)
-  process.exit(0)
+  ifError(err)
+  success()
 }
 
 function stopped (err) {
-  if (err) {
-    console.log(err)
-    return process.exit(1)
-  }
-
-  console.log('Stopped')
-  process.exit(0)
+  ifError(err)
+  success()
 }
 
 function printEntry (entry) {
@@ -197,4 +195,18 @@ function printMessage (message) {
     })
     console.log()
   }
+}
+
+function ifError (err) {
+  if (err) {
+    console.log(err)
+    process.exit(1)
+  }
+}
+
+function success (msg) {
+  if (msg) {
+    console.log(msg)
+  }
+  process.exit(0)
 }
