@@ -18,6 +18,12 @@ program
   .action(start)
 
 program
+  .command('stop [stamp]')
+  .description('stop the clock')
+  .option('-d, --datadir <path>')
+  .action(stop)
+
+program
   .command('list')
   .alias('ls')
   .description('show data entries')
@@ -62,6 +68,11 @@ function start (cmd) {
   clocker.start(data, new Date(), started)
 }
 
+function stop (stamp, cmd) {
+  var clocker = initialize(cmd)
+  clocker.stop(stamp, stopped)
+}
+
 function list (cmd) {
   var clocker = initialize(cmd)
 
@@ -102,6 +113,16 @@ function started (err, stamp) {
   }
 
   console.log('Started: ' + stamp)
+  process.exit(0)
+}
+
+function stopped (err) {
+  if (err) {
+    console.log(err)
+    return process.exit(1)
+  }
+
+  console.log('Stopped')
   process.exit(0)
 }
 
