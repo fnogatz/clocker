@@ -203,7 +203,7 @@ test('status', function (t) {
 })
 
 test('stop', function (t) {
-  t.plan(1)
+  t.plan(2)
 
   t.test('with stamp as argument', function (t) {
     t.plan(2)
@@ -257,6 +257,29 @@ test('stop', function (t) {
                 })
               })
             })
+          })
+        })
+      })
+    })
+  })
+
+  t.test('with data as parameter', function (t) {
+    var clocker = initialize()
+
+    clocker.start({ some: 'thing' }, '1min ago', function (_err, stamp) {
+      clocker.stop({ foo: 'bar' }, function (err) {
+        t.notOk(err)
+
+        clocker.get(stamp, function (_err, entry) {
+          t.deepEqual(entry, mockup(stamp, {
+            foo: 'bar',
+            some: 'thing'
+          }, {
+            end: entry.end
+          }))
+
+          clocker.close(function () {
+            t.end()
           })
         })
       })
@@ -537,7 +560,7 @@ test('data', function (t) {
 
         var reference = mockup(stamp, value)
 
-        t.deepLooseEqual(data, [ reference ])
+        t.deepEqual(data, [ reference ])
 
         clocker.close(function () {
           t.end()
@@ -558,7 +581,7 @@ test('data', function (t) {
 
         var reference = mockup(stamp, value)
 
-        t.deepLooseEqual(data, [ reference ])
+        t.deepEqual(data, [ reference ])
 
         clocker.close(function () {
           t.end()
@@ -585,7 +608,7 @@ test('data', function (t) {
 
             var reference = mockup(stamp, value)
 
-            t.deepLooseEqual(data, [ reference ])
+            t.deepEqual(data, [ reference ])
 
             clocker.close(function () {
               t.end()
@@ -604,7 +627,7 @@ test('data', function (t) {
           clocker.data({ gt: '1 hours ago' }, function (err, data) {
             t.notOk(err)
 
-            t.deepLooseEqual(data, [], 'empty result')
+            t.deepEqual(data, [], 'empty result')
 
             clocker.close(function () {
               t.end()
@@ -631,7 +654,7 @@ test('data', function (t) {
 
             var reference = mockup(stamp, value)
 
-            t.deepLooseEqual(data, [ reference ])
+            t.deepEqual(data, [ reference ])
 
             clocker.close(function () {
               t.end()
@@ -652,7 +675,7 @@ test('data', function (t) {
           clocker.data({ lt: '3 hours ago' }, function (err, data) {
             t.notOk(err)
 
-            t.deepLooseEqual(data, [], 'empty result')
+            t.deepEqual(data, [], 'empty result')
 
             clocker.close(function () {
               t.end()
@@ -666,8 +689,9 @@ test('data', function (t) {
       var clocker = initialize()
 
       clocker.add('08:00', '10:00', { type: 't1' }, function (_err, stamp1) {
+        var reference1 = mockup(stamp1, { type: 't1' })
+
         clocker.add('11:00', '13:00', { type: 't2' }, function (_err, stamp2) {
-          var reference1 = mockup(stamp1, { type: 't1' })
           var reference2 = mockup(stamp2, { type: 't2' })
 
           t.plan(2)
@@ -678,7 +702,7 @@ test('data', function (t) {
             }, function (err, data) {
               t.notOk(err)
 
-              t.deepLooseEqual(data, [ reference1 ])
+              t.deepEqual(data, [ reference1 ])
 
               t.end()
             })
@@ -690,7 +714,7 @@ test('data', function (t) {
             }, function (err, data) {
               t.notOk(err)
 
-              t.deepLooseEqual(data, [ reference2 ])
+              t.deepEqual(data, [ reference2 ])
 
               t.end()
             })
