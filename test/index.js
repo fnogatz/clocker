@@ -129,7 +129,7 @@ test('start', function (t) {
 })
 
 test('status', function (t) {
-  t.plan(2)
+  t.plan(3)
 
   t.test('start+stop', function (t) {
     var clocker = initialize()
@@ -169,6 +169,95 @@ test('status', function (t) {
 
         clocker.close(function () {
           t.end()
+        })
+      })
+    })
+  })
+
+  t.test('with given stamp', function (t) {
+    var clocker = initialize()
+
+    clocker.status(function (err, status) {
+      t.notOk(err)
+      t.equal(status, 'stopped', 'stopped at first')
+
+      clocker.start(function (_err, stamp) {
+        clocker.status(stamp, function (err, status) {
+          t.notOk(err)
+          t.ok(/^elapsed time:/.test(status), 'started')
+
+          clocker.stop(function () {
+            clocker.status(stamp, function (err, status) {
+              t.notOk(err)
+              t.equal(status, 'stopped', 'stopped again')
+
+              clocker.close(function () {
+                t.end()
+              })
+            })
+          })
+        })
+      })
+    })
+  })
+})
+
+test('stop', function (t) {
+  t.plan(1)
+
+  t.test('with stamp as argument', function (t) {
+    t.plan(2)
+
+    t.test(function (t) {
+      var clocker = initialize()
+
+      clocker.start('2 min ago', function (_err, stamp1) {
+        clocker.start('1min ago', function (_err, stamp2) {
+          clocker.status(stamp1, function (_err, status1) {
+            clocker.status(stamp2, function (_err, status2) {
+              t.ok(/^elapsed time:/.test(status1), 'first running')
+              t.ok(/^elapsed time:/.test(status2), 'second running')
+
+              clocker.stop(stamp1, function (err) {
+                t.notOk(err)
+
+                clocker.status(stamp1, function (_err, status1) {
+                  t.equal(status1, 'stopped', 'first stopped')
+
+                  clocker.close(function () {
+                    t.end()
+                  })
+                })
+              })
+            })
+          })
+        })
+      })
+    })
+
+    t.test(function (t) {
+      var clocker = initialize()
+
+      clocker.start('2 min ago', function (_err, stamp1) {
+        clocker.start('1min ago', function (_err, stamp2) {
+          clocker.status(stamp1, function (_err, status1) {
+            clocker.status(stamp2, function (_err, status2) {
+              t.ok(/^elapsed time:/.test(status1), 'first running')
+              t.ok(/^elapsed time:/.test(status2), 'second running')
+
+              clocker.stop(stamp2, function (err) {
+                t.notOk(err)
+
+                clocker.status(stamp2, function (_err, status1) {
+                  t.equal(status1, 'stopped', 'second stopped')
+
+                  clocker.close(function () {
+                    t.end()
+                  })
+                })
+              })
+            })
+          })
         })
       })
     })
