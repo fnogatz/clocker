@@ -19,8 +19,10 @@ program
 
 program
   .command('list')
+  .alias('ls')
   .description('show data entries')
   .option('-d, --datadir <path>')
+  .option('-v, --verbose', 'also show clocked messages')
   .action(list)
 
 program.parse(process.argv)
@@ -28,7 +30,14 @@ program.parse(process.argv)
 function start (cmd) {
   var clocker = initialize(cmd)
 
-  clocker.start({}, new Date(), started)
+  var data = {}
+  ;['type', 'message'].forEach(function (prop) {
+    if (cmd[prop]) {
+      data[prop] = cmd[prop]
+    }
+  })
+
+  clocker.start(data, new Date(), started)
 }
 
 function list (cmd) {
@@ -41,6 +50,10 @@ function list (cmd) {
     process.exit(0)
   }).on('data', function (entry) {
     printEntry(entry)
+
+    if (cmd.verbose) {
+      printMessage(entry.data.message)
+    }
   })
 }
 
@@ -70,15 +83,28 @@ function started (err, stamp) {
   process.exit(0)
 }
 
-function printEntry (data) {
+function printEntry (entry) {
+  var data = entry.data || {}
+
   console.log(
     '%s  %s  [ %s - %s ]  (%s)%s%s',
-    data.key,
-    strftime('%F', data.start),
-    strftime('%T', data.start),
-    (data.end === 'NOW' ? 'NOW' : strftime('%T', data.end)),
-    Clocker.formatElapsed(data.elapsed),
+    entry.key,
+    strftime('%F', entry.start),
+    strftime('%T', entry.start),
+    (entry.end === 'NOW' ? 'NOW' : strftime('%T', entry.end)),
+    Clocker.formatElapsed(entry.elapsed),
     (data.type ? '  [' + data.type + ']' : ''),
     (data.archive ? ' A' : '')
   )
+}
+
+function printMessage (message) {
+  if (message) {
+    var lines = message.split('\n')
+    console.log()
+    lines.forEach(function (line) {
+      console.log('    ' + line)
+    })
+    console.log()
+  }
 }
