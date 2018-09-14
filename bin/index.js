@@ -8,8 +8,26 @@ var Clocker = require('../lib/index')
 var argvs = splitArgvs(process.argv)
 
 program
-  .version(require('../package.json').version)
+  .version(require('../package.json').version, '-v, --version')
   .description('track project hours')
+
+// Show info on unknown command
+program.on('command:*', function () {
+  console.error('Invalid command: %s\nSee --help for a list of available commands.', argvs[0].slice(2).join(' '))
+  process.exit(1)
+})
+
+// Adjust help output for set command
+//   as it has two optional arguments,
+//   which cannot be handled by commander
+var outputHelp = program.outputHelp.bind(program)
+program.outputHelp = function (cb) {
+  cb = cb || function (passthru) { return passthru }
+  var newCb = function (text) {
+    return cb(text).replace('set [options] [stamp] <key> [value]', 'set [options] [stamp] <key> <value>')
+  }
+  outputHelp(newCb)
+}
 
 program
   .command('start')
@@ -47,6 +65,13 @@ program
   .action(get)
 
 program
+  .command('set [stamp] <key> [value]')
+  .usage('[options] [stamp] <key> <value>')
+  .description('adjust time stamp boundaries or other properties')
+  .option('-d, --datadir <path>')
+  .action(set)
+
+program
   .command('remove [stamp]')
   .alias('rm')
   .description('remove an entry')
@@ -59,11 +84,7 @@ program
   })
   .action(help)
 
-program.on('command:*', function () {
-  console.error('Invalid command: %s\nSee --help for a list of available commands.', argvs[0].slice(2).join(' '))
-  process.exit(1)
-})
-
+// Show help if no command given
 if (!argvs[0].slice(2).length) {
   program.help()
 }
@@ -149,6 +170,21 @@ function get (stamp, cmd) {
   clocker.get(stamp, function (err, entry) {
     ifError(err)
     success(entry.data)
+  })
+}
+
+function set (stamp, key, value, cmd) {
+  if (typeof value === 'undefined') {
+    // move properties since only stamp is optional
+    value = key
+    key = stamp
+    stamp = undefined
+  }
+
+  var clocker = initialize(cmd)
+  clocker.set(stamp, key, value, function (err) {
+    ifError(err)
+    success()
   })
 }
 
