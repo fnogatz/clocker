@@ -381,6 +381,102 @@ test('get', function (t) {
   })
 })
 
+test('set', function (t) {
+  t.plan(4)
+
+  t.test('with stamp argument', function (t) {
+    var clocker = initialize()
+
+    var data = {
+      foo: 'bar',
+      some: true
+    }
+    clocker.start(data, function (_err, stamp) {
+      clocker.set(stamp, 'foo', 'boing', function (err) {
+        t.notOk(err)
+
+        clocker.get(stamp, function (err, data) {
+          t.notOk(err)
+          t.deepEqual(data, mockup(stamp, { foo: 'boing', some: true }))
+
+          clocker.close(function () {
+            t.end()
+          })
+        })
+      })
+    })
+  })
+
+  t.test('without stamp argument', function (t) {
+    var clocker = initialize()
+
+    var data = {
+      foo: 'bar',
+      some: true
+    }
+    clocker.start(data, function (_err, stamp) {
+      clocker.set('foo', 'boing', function (err) {
+        t.notOk(err)
+
+        clocker.get(stamp, function (err, data) {
+          t.notOk(err)
+          t.deepEqual(data, mockup(stamp, { foo: 'boing', some: true }))
+
+          clocker.close(function () {
+            t.end()
+          })
+        })
+      })
+    })
+  })
+
+  t.test('special key: start', function (t) {
+    var clocker = initialize()
+
+    var data = {
+      foo: 'bar',
+      some: true
+    }
+    clocker.start(data, function (_err, stamp1) {
+      clocker.set(stamp1, 'start', '10 minutes ago', function (err, stamp2) {
+        t.notOk(err)
+
+        clocker.get(stamp2, function (err, data) {
+          t.notOk(err)
+          t.deepEqual(data, mockup(stamp2, { foo: 'bar', some: true }))
+
+          clocker.close(function () {
+            t.end()
+          })
+        })
+      })
+    })
+  })
+
+  t.test('special key: end', function (t) {
+    var clocker = initialize()
+
+    var data = {
+      foo: 'bar',
+      some: true
+    }
+    clocker.start(data, '20 minutes ago', function (_err, stamp) {
+      clocker.set(stamp, 'end', '10 minutes ago', function (err) {
+        t.notOk(err)
+
+        clocker.get(stamp, function (err, entry) {
+          t.notOk(err)
+          t.deepEqual(entry, mockup(stamp, { foo: 'bar', some: true }, { end: entry.end }))
+
+          clocker.close(function () {
+            t.end()
+          })
+        })
+      })
+    })
+  })
+})
+
 test('restart', function (t) {
   var clocker = initialize()
 
@@ -388,9 +484,7 @@ test('restart', function (t) {
     foo: 'bar',
     some: true
   }
-  clocker.start(data, function (err, stamp1) {
-    t.notOk(err)
-
+  clocker.start(data, function (_err, stamp1) {
     // wait a second to avoid restarting at the same time
     setTimeout(function () {
       clocker.restart(function (err, stamp2) {

@@ -8,7 +8,7 @@ var Clocker = require('../lib/index')
 var argvs = splitArgvs(process.argv)
 
 program
-  .version(require('../package.json').version, '-v, --version')
+  .version(require('../package.json').version)
   .description('track project hours')
 
 // Show info on unknown command
