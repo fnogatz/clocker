@@ -72,6 +72,14 @@ program
   .action(set)
 
 program
+  .command('add <start> <end>')
+  .description('add an entry')
+  .option('-d, --datadir <path>')
+  .option('-t, --type <value>')
+  .option('-m, --message <value>')
+  .action(add)
+
+program
   .command('remove [stamp]')
   .alias('rm')
   .description('remove an entry')
@@ -183,6 +191,24 @@ function set (stamp, key, value, cmd) {
 
   var clocker = initialize(cmd)
   clocker.set(stamp, key, value, function (err) {
+    ifError(err)
+    success()
+  })
+}
+
+function add (start, end, cmd) {
+  var clocker = initialize(cmd)
+
+  var data = {
+    end: end
+  }
+  ;['type', 'message'].forEach(function (prop) {
+    if (cmd[prop]) {
+      data[prop] = cmd[prop]
+    }
+  })
+
+  clocker.add(start, end, data, function (err) {
     ifError(err)
     success()
   })
