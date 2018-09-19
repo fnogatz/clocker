@@ -517,8 +517,13 @@ test('add', function (t) {
       t.notOk(err)
       t.ok(stamp)
 
-      clocker.close(function () {
-        t.end()
+      clocker.get(stamp, function (err, data) {
+        t.notOk(err)
+        t.deepEqual(data, mockup(stamp, {}, { end: stop }))
+
+        clocker.close(function () {
+          t.end()
+        })
       })
     })
   })
@@ -551,7 +556,7 @@ test('add', function (t) {
 
       clocker.get(stamp, function (err, data2) {
         t.notOk(err)
-        t.deepEqual(data2, mockup(stamp, data))
+        t.deepEqual(data2, mockup(stamp, data, { end: end }))
 
         clocker.close(function () {
           t.end()
@@ -783,34 +788,22 @@ test('data', function (t) {
       var clocker = initialize()
 
       clocker.add('08:00', '10:00', { type: 't1' }, function (_err, stamp1) {
-        var reference1 = mockup(stamp1, { type: 't1' })
-
         clocker.add('11:00', '13:00', { type: 't2' }, function (_err, stamp2) {
-          var reference2 = mockup(stamp2, { type: 't2' })
+          clocker.data({
+            test: (entry) => entry.data.type === 't1'
+          }, function (err, data) {
+            t.notOk(err)
+            t.deepEqual(data, [ mockup(stamp1, { type: 't1' }, { end: data[0].end }) ])
 
-          t.plan(2)
-
-          t.test(function (t) {
-            clocker.data({
-              test: (entry) => entry.data.type === 't1'
-            }, function (err, data) {
-              t.notOk(err)
-
-              t.deepEqual(data, [ reference1 ])
-
-              t.end()
-            })
-          })
-
-          t.test(function (t) {
             clocker.data({
               test: (entry) => entry.data.type === 't2'
             }, function (err, data) {
               t.notOk(err)
+              t.deepEqual(data, [ mockup(stamp2, { type: 't2' }, { end: data[0].end }) ])
 
-              t.deepEqual(data, [ reference2 ])
-
-              t.end()
+              clocker.close(function () {
+                t.end()
+              })
             })
           })
         })
