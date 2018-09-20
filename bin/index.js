@@ -45,6 +45,12 @@ program
   .action(stop)
 
 program
+  .command('restart [stamp]')
+  .description('restart the clock')
+  .option('-d, --datadir <path>')
+  .action(restart)
+
+program
   .command('status [stamp]')
   .description('show the elapsed time')
   .option('-d, --datadir <path>')
@@ -149,6 +155,12 @@ function stop (stamp, cmd) {
   clocker.stop(stamp, data, stopped)
 }
 
+function restart (stamp, cmd) {
+  var clocker = initialize(cmd)
+
+  clocker.restart(stamp, nil)
+}
+
 function list (cmd) {
   var clocker = initialize(cmd)
 
@@ -190,10 +202,7 @@ function set (stamp, key, value, cmd) {
   }
 
   var clocker = initialize(cmd)
-  clocker.set(stamp, key, value, function (err) {
-    ifError(err)
-    success()
-  })
+  clocker.set(stamp, key, value, nil)
 }
 
 function add (start, end, cmd) {
@@ -208,18 +217,12 @@ function add (start, end, cmd) {
     }
   })
 
-  clocker.add(start, end, data, function (err) {
-    ifError(err)
-    success()
-  })
+  clocker.add(start, end, data, nil)
 }
 
 function remove (stamp, cmd) {
   var clocker = initialize(cmd)
-  clocker.remove(stamp, function (err) {
-    ifError(err)
-    success()
-  })
+  clocker.remove(stamp, nil)
 }
 
 function initialize (cmd) {
@@ -248,6 +251,11 @@ function started (err, stamp) {
 }
 
 function stopped (err) {
+  ifError(err)
+  success()
+}
+
+function nil (err) {
   ifError(err)
   success()
 }
