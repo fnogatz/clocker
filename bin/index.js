@@ -105,6 +105,8 @@ if (!argvs[0].slice(2).length) {
 
 program.parse(argvs[0])
 
+var clocker
+
 function splitArgvs (argv) {
   // splits array on '--' value into array of arrays
   return argv.reduceRight((prev, curr) => {
@@ -122,7 +124,7 @@ function help () {
 }
 
 function start (cmd) {
-  var clocker = initialize(cmd)
+  clocker = initialize(cmd)
 
   var data = {}
   ;['type', 'message'].forEach(function (prop) {
@@ -143,7 +145,7 @@ function start (cmd) {
 }
 
 function stop (stamp, cmd) {
-  var clocker = initialize(cmd)
+  clocker = initialize(cmd)
 
   var data = {}
   ;['message'].forEach(function (prop) {
@@ -156,18 +158,18 @@ function stop (stamp, cmd) {
 }
 
 function restart (stamp, cmd) {
-  var clocker = initialize(cmd)
+  clocker = initialize(cmd)
 
   clocker.restart(stamp, nil)
 }
 
 function list (cmd) {
-  var clocker = initialize(cmd)
+  clocker = initialize(cmd)
 
   clocker.dataStream({}).on('error', function (err) {
     ifError(err)
   }).on('end', function () {
-    process.exit(0)
+    success()
   }).on('data', function (entry) {
     printEntry(entry)
 
@@ -178,7 +180,7 @@ function list (cmd) {
 }
 
 function status (stamp, cmd) {
-  var clocker = initialize(cmd)
+  clocker = initialize(cmd)
   clocker.status(stamp, function (err, status) {
     ifError(err)
     success(status)
@@ -186,7 +188,7 @@ function status (stamp, cmd) {
 }
 
 function get (stamp, cmd) {
-  var clocker = initialize(cmd)
+  clocker = initialize(cmd)
   clocker.get(stamp, function (err, entry) {
     ifError(err)
     success(entry.data)
@@ -201,12 +203,12 @@ function set (stamp, key, value, cmd) {
     stamp = undefined
   }
 
-  var clocker = initialize(cmd)
+  clocker = initialize(cmd)
   clocker.set(stamp, key, value, nil)
 }
 
 function add (start, end, cmd) {
-  var clocker = initialize(cmd)
+  clocker = initialize(cmd)
 
   var data = {
     end: end
@@ -221,7 +223,7 @@ function add (start, end, cmd) {
 }
 
 function remove (stamp, cmd) {
-  var clocker = initialize(cmd)
+  clocker = initialize(cmd)
   clocker.remove(stamp, nil)
 }
 
@@ -289,7 +291,14 @@ function printMessage (message) {
 function ifError (err) {
   if (err) {
     console.log(err)
-    process.exit(1)
+
+    if (clocker) {
+      clocker.close(function () {
+        process.exit(1)
+      })
+    } else {
+      process.exit(1)
+    }
   }
 }
 
@@ -297,5 +306,12 @@ function success (msg) {
   if (msg) {
     console.log(msg)
   }
-  process.exit(0)
+
+  if (clocker) {
+    clocker.close(function () {
+      process.exit(0)
+    })
+  } else {
+    process.exit(0)
+  }
 }
