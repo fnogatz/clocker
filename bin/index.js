@@ -65,19 +65,6 @@ program
   .action(list)
 
 program
-  .command('get [stamp]')
-  .description('get the raw data')
-  .option('-d, --datadir <path>')
-  .action(get)
-
-program
-  .command('set [stamp] <key> [value]')
-  .usage('[options] [stamp] <key> <value>')
-  .description('adjust time stamp boundaries or other properties')
-  .option('-d, --datadir <path>')
-  .action(set)
-
-program
   .command('add <start> <end>')
   .description('add an entry')
   .option('-d, --datadir <path>')
@@ -86,11 +73,24 @@ program
   .action(add)
 
 program
+  .command('get [stamp]')
+  .description('get the raw data')
+  .option('-d, --datadir <path>')
+  .action(get)
+
+program
   .command('remove [stamp]')
   .alias('rm')
   .description('remove an entry')
   .option('-d, --datadir <path>')
   .action(remove)
+
+program
+  .command('set [stamp] <key> [value]')
+  .usage('[options] [stamp] <key> <value>')
+  .description('adjust time stamp boundaries or other properties')
+  .option('-d, --datadir <path>')
+  .action(set)
 
 program
   .command('help', {
