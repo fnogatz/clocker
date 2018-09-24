@@ -385,22 +385,49 @@ test('set', function (t) {
   t.plan(4)
 
   t.test('with stamp argument', function (t) {
-    var clocker = initialize()
+    t.plan(2)
 
-    var data = {
-      foo: 'bar',
-      some: true
-    }
-    clocker.start(data, function (_err, stamp) {
-      clocker.set(stamp, 'foo', 'boing', function (err) {
-        t.notOk(err)
+    t.test('with key/value pair', function (t) {
+      var clocker = initialize()
 
-        clocker.get(stamp, function (err, data) {
+      var data = {
+        foo: 'bar',
+        some: true
+      }
+      clocker.start(data, function (_err, stamp) {
+        clocker.set(stamp, 'foo', 'boing', function (err) {
           t.notOk(err)
-          t.deepEqual(data, mockup(stamp, { foo: 'boing', some: true }))
 
-          clocker.close(function () {
-            t.end()
+          clocker.get(stamp, function (err, data) {
+            t.notOk(err)
+            t.deepEqual(data, mockup(stamp, { foo: 'boing', some: true }))
+
+            clocker.close(function () {
+              t.end()
+            })
+          })
+        })
+      })
+    })
+
+    t.test('with object', function (t) {
+      var clocker = initialize()
+
+      var data = {
+        foo: 'bar',
+        some: true
+      }
+      clocker.start(data, function (_err, stamp) {
+        clocker.set(stamp, { foo: 'boing' }, function (err) {
+          t.notOk(err)
+
+          clocker.get(stamp, function (err, data) {
+            t.notOk(err)
+            t.deepEqual(data, mockup(stamp, { foo: 'boing', some: true }))
+
+            clocker.close(function () {
+              t.end()
+            })
           })
         })
       })
