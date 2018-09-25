@@ -1,8 +1,14 @@
 #!/usr/bin/env node
 
 var path = require('path')
+var os = require('os')
+var fs = require('fs')
 var program = require('commander')
 var strftime = require('strftime')
+var editor = require('editor')
+var stringify = require('json-stable-stringify')
+var tmpdir = os.tmpdir()
+
 var Clocker = require('../lib/index')
 
 var argvs = splitArgvs(process.argv)
@@ -91,6 +97,12 @@ program
   .description('adjust time stamp boundaries or other properties')
   .option('-d, --datadir <path>')
   .action(set)
+
+program
+  .command('edit [stamp] [key]')
+  .description('launch $EDITOR to edit the record')
+  .option('-d, --datadir <path>')
+  .action(edit)
 
 program
   .command('help', {
@@ -227,6 +239,54 @@ function remove (stamp, cmd) {
   clocker.remove(stamp, nil)
 }
 
+function edit (stamp, prop, cmd) {
+  if (cmd) {
+    clocker = initialize(cmd)
+  }
+
+  clocker.get(stamp, function (err, obj) {
+    if (err) {
+      if (err.name === 'NotFoundError' && typeof stamp !== 'undefined' && typeof prop === 'undefined') {
+        // stamp was just prop
+        return edit(null, stamp, null)
+      } else {
+        ifError(err)
+      }
+    }
+
+    obj.data = obj.data || {}
+    if (obj.end && obj.end !== 'NOW') {
+      obj.data.end = strftime('%F %T', obj.end)
+    }
+
+    var src = obj.data
+    if (typeof prop !== 'undefined') {
+      if (obj.data.hasOwnProperty(prop)) {
+        src = obj.data[prop]
+      } else {
+        ifError(new Error('Property not set: ' + prop))
+      }
+    }
+
+    src = stringify(src, {
+      space: 2
+    })
+    editEntry(src, function (updated) {
+      try {
+        updated = JSON.parse(updated)
+      } catch (err) {
+        ifError(new Error('error parsing json'))
+      }
+
+      if (typeof prop !== 'undefined') {
+        clocker.set(stamp, prop, updated, nil)
+      } else {
+        clocker.set(stamp, updated, nil)
+      }
+    })
+  })
+}
+
 function initialize (cmd) {
   if (typeof cmd !== 'object') {
     program.outputHelp()
@@ -260,6 +320,25 @@ function stopped (err) {
 function nil (err) {
   ifError(err)
   success()
+}
+
+function editEntry (src, cb) {
+  var file = path.join(tmpdir, 'clocker-' + Math.random())
+  fs.writeFile(file, src || '', function (err) {
+    ifError(err)
+
+    editor(file, function (code, sig) {
+      if (code !== 0) {
+        ifError(new Error('non-zero exit code from $EDITOR'))
+      }
+
+      fs.readFile(file, function (err, src) {
+        ifError(err)
+
+        cb(src)
+      })
+    })
+  })
 }
 
 function printEntry (entry) {
