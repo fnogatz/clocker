@@ -839,6 +839,28 @@ test('data', function (t) {
   })
 })
 
+test('aggregate', function (t) {
+  var clocker = initialize()
+
+  clocker.add('2018-01-01 08:00', '2018-01-01 10:00', { type: 't1' }, function (_err, stamp1) {
+    clocker.add('2018-01-01 11:00', '2018-01-01 13:00', { type: 't2' }, function (_err, stamp2) {
+      clocker.add('2018-01-02 14:00', '2018-01-02 16:00', { type: 't3' }, function (_err, stamp3) {
+        clocker.aggregate('day', function (err, data) {
+          t.notOk(err)
+          t.deepEqual(data, {
+            '2018-01-01': (2 + 2) * 60 * 60,
+            '2018-01-02': 2 * 60 * 60
+          })
+
+          clocker.close(function () {
+            t.end()
+          })
+        })
+      })
+    })
+  })
+})
+
 function initialize () {
   var dataDir = path.join(__dirname, 'datadir')
 

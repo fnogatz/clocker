@@ -63,6 +63,12 @@ program
   .action(status)
 
 program
+  .command('data')
+  .description('generate invoicer-compatible json output')
+  .option('-d, --datadir <path>')
+  .action(aggregateJson)
+
+program
   .command('list')
   .alias('ls')
   .description('show data entries')
@@ -196,6 +202,27 @@ function status (stamp, cmd) {
   clocker.status(stamp, function (err, status) {
     ifError(err)
     success(status)
+  })
+}
+
+function aggregateJson (cmd) {
+  clocker = initialize(cmd)
+  clocker.aggregate('day', function (err, data) {
+    ifError(err)
+
+    var json = {
+      hours: [],
+      title: 'consulting'
+    }
+
+    for (var date in data) {
+      json.hours.push({
+        date: date,
+        hours: Math.round(data[date] / 36) / 100
+      })
+    }
+
+    success([json])
   })
 }
 
@@ -383,7 +410,7 @@ function ifError (err) {
 
 function success (msg) {
   if (msg) {
-    console.log(msg)
+    console.log(stringify(msg, { space: 2 }))
   }
 
   if (clocker) {
