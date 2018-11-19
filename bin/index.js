@@ -66,6 +66,7 @@ program
   .command('data')
   .description('generate invoicer-compatible json output')
   .option('-d, --datadir <path>')
+  .option('-t, --type <value>', 'filter by type, a string or /regex/')
   .action(aggregateJson)
 
 program
@@ -73,6 +74,7 @@ program
   .alias('ls')
   .description('show data entries')
   .option('-d, --datadir <path>')
+  .option('-t, --type <value>', 'filter by type, a string or /regex/')
   .option('-v, --verbose', 'also show clocked messages')
   .action(list)
 
@@ -183,8 +185,9 @@ function restart (stamp, cmd) {
 
 function list (cmd) {
   clocker = initialize(cmd)
+  var filter = getFilter(cmd)
 
-  clocker.dataStream({}).on('error', function (err) {
+  clocker.dataStream(filter).on('error', function (err) {
     ifError(err)
   }).on('end', function () {
     success()
@@ -207,8 +210,9 @@ function status (stamp, cmd) {
 
 function aggregateJson (cmd) {
   clocker = initialize(cmd)
+  var filter = getFilter(cmd)
 
-  clocker.aggregate('day', function (err, data) {
+  clocker.aggregate('day', filter, function (err, data) {
     ifError(err)
 
     var json = {
@@ -323,6 +327,22 @@ function initialize (cmd) {
   return new Clocker({
     dir: dir(cmd)
   })
+}
+
+function getFilter (cmd) {
+  var filter = {}
+
+  if (cmd.type) {
+    if (cmd.type[0] === '/' && cmd.type.slice(-1)[0] === '/') {
+      // regex
+      filter.test = (e) => RegExp(cmd.type.slice(1, -1)).test(e.data.type)
+    } else {
+      // string
+      filter.test = (e) => e.data.type === cmd.type
+    }
+  }
+
+  return filter
 }
 
 function dir (cmd) {
