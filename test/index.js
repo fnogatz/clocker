@@ -840,20 +840,73 @@ test('data', function (t) {
 })
 
 test('aggregate', function (t) {
-  var clocker = initialize()
+  t.plan(1)
 
-  clocker.add('2018-01-01 08:00', '2018-01-01 10:00', { type: 't1' }, function (_err, stamp1) {
-    clocker.add('2018-01-01 11:00', '2018-01-01 13:00', { type: 't2' }, function (_err, stamp2) {
-      clocker.add('2018-01-02 14:00', '2018-01-02 16:00', { type: 't3' }, function (_err, stamp3) {
-        clocker.aggregate('day', function (err, data) {
-          t.notOk(err)
-          t.deepEqual(data, {
-            '2018-01-01': (2 + 2) * 60 * 60,
-            '2018-01-02': 2 * 60 * 60
+  t.test('by day', function (t) {
+    t.plan(3)
+
+    t.test('simple not overlapping days', function (t) {
+      var clocker = initialize()
+
+      clocker.add('2018-01-01 08:00', '2018-01-01 10:00', { type: 't1' }, function (_err, stamp1) {
+        clocker.add('2018-01-01 11:00', '2018-01-01 13:00', { type: 't2' }, function (_err, stamp2) {
+          clocker.add('2018-01-02 14:00', '2018-01-02 16:00', { type: 't3' }, function (_err, stamp3) {
+            clocker.aggregate('day', function (err, data) {
+              t.notOk(err)
+              t.deepEqual(data, {
+                '2018-01-01': (2 + 2) * 60 * 60,
+                '2018-01-02': 2 * 60 * 60
+              })
+
+              clocker.close(function () {
+                t.end()
+              })
+            })
           })
+        })
+      })
+    })
 
-          clocker.close(function () {
-            t.end()
+    t.test('overlapping days', function (t) {
+      var clocker = initialize()
+
+      clocker.add('2018-01-01 08:00', '2018-01-01 09:00', { type: 't1' }, function (_err, stamp1) {
+        clocker.add('2018-01-01 22:00', '2018-01-02 03:00', { type: 't2' }, function (_err, stamp2) {
+          clocker.add('2018-01-02 14:00', '2018-01-02 18:00', { type: 't3' }, function (_err, stamp3) {
+            clocker.aggregate('day', function (err, data) {
+              t.notOk(err)
+              t.deepEqual(data, {
+                '2018-01-01': (1 + 2) * 60 * 60,
+                '2018-01-02': (3 + 4) * 60 * 60
+              })
+
+              clocker.close(function () {
+                t.end()
+              })
+            })
+          })
+        })
+      })
+    })
+
+    t.test('overlapping days, multiple days', function (t) {
+      var clocker = initialize()
+
+      clocker.add('2018-01-01 08:00', '2018-01-01 09:00', { type: 't1' }, function (_err, stamp1) {
+        clocker.add('2018-01-01 22:00', '2018-01-03 03:00', { type: 't2' }, function (_err, stamp2) {
+          clocker.add('2018-01-03 14:00', '2018-01-03 18:00', { type: 't3' }, function (_err, stamp3) {
+            clocker.aggregate('day', function (err, data) {
+              t.notOk(err)
+              t.deepEqual(data, {
+                '2018-01-01': (1 + 2) * 60 * 60,
+                '2018-01-02': 24 * 60 * 60,
+                '2018-01-03': (3 + 4) * 60 * 60
+              })
+
+              clocker.close(function () {
+                t.end()
+              })
+            })
           })
         })
       })

@@ -207,6 +207,7 @@ function status (stamp, cmd) {
 
 function aggregateJson (cmd) {
   clocker = initialize(cmd)
+
   clocker.aggregate('day', function (err, data) {
     ifError(err)
 
