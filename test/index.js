@@ -840,7 +840,7 @@ test('data', function (t) {
 })
 
 test('aggregate', function (t) {
-  t.plan(1)
+  t.plan(2)
 
   t.test('by day', function (t) {
     t.plan(3)
@@ -905,6 +905,42 @@ test('aggregate', function (t) {
 
               clocker.close(function () {
                 t.end()
+              })
+            })
+          })
+        })
+      })
+    })
+  })
+
+  t.test('with filter', function (t) {
+    t.plan(1)
+
+    t.test('test for type', function (t) {
+      var clocker = initialize()
+
+      clocker.add('2018-01-01 08:00', '2018-01-01 09:00', { type: 't1' }, function (_err, stamp1) {
+        clocker.add('2018-01-01 11:00', '2018-01-01 13:00', { type: 't2' }, function (_err, stamp2) {
+          clocker.add('2018-01-01 14:00', '2018-01-01 17:00', { type: 't1' }, function (_err, stamp3) {
+            clocker.aggregate('day', {
+              test: (entry) => entry.data.type === 't1'
+            }, function (err, data) {
+              t.notOk(err)
+              t.deepEqual(data, {
+                '2018-01-01': (1 + 3) * 60 * 60
+              })
+
+              clocker.aggregate('day', {
+                test: (entry) => entry.data.type === 't2'
+              }, function (err, data) {
+                t.notOk(err)
+                t.deepEqual(data, {
+                  '2018-01-01': 2 * 60 * 60
+                })
+
+                clocker.close(function () {
+                  t.end()
+                })
               })
             })
           })
