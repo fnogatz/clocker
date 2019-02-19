@@ -720,7 +720,7 @@ test('data', function (t) {
     t.plan(3)
 
     t.test('gt', function (t) {
-      t.plan(2)
+      t.plan(3)
 
       t.test(function (t) {
         var clocker = initialize()
@@ -754,6 +754,28 @@ test('data', function (t) {
             t.notOk(err)
 
             t.deepEqual(data, [], 'empty result')
+
+            clocker.close(function () {
+              t.end()
+            })
+          })
+        })
+      })
+
+      t.test(function (t) {
+        var clocker = initialize()
+
+        var value = {
+          foo: 'bar'
+        }
+
+        clocker.start(value, '2 hours ago', function (_err, stamp) {
+          clocker.data({ gt: new Date(Date.now() - 3 * 60 * 60 * 1000) }, function (err, data) {
+            t.notOk(err)
+
+            var reference = mockup(stamp, value)
+
+            t.deepEqual(data, [ reference ])
 
             clocker.close(function () {
               t.end()
