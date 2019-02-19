@@ -10,6 +10,8 @@ var stringify = require('json-stable-stringify')
 var tmpdir = os.tmpdir()
 
 var Clocker = require('../lib/index')
+var util = require('../lib/util')
+var getDate = util.getDate
 
 var argvs = splitArgvs(process.argv)
 
@@ -77,6 +79,13 @@ program
   .option('-t, --type <value>', 'filter by type, a string or /regex/')
   .option('-v, --verbose', 'also show clocked messages')
   .action(list)
+
+program
+  .command('report')
+  .description('show all logged hours of a specific day')
+  .option('-d, --datadir <path>')
+  .option('--reportDay <value>', 'day to use')
+  .action(report)
 
 program
   .command('add <start> <end>')
@@ -196,6 +205,42 @@ function list (cmd) {
 
     if (cmd.verbose) {
       printMessage(entry.data.message)
+    }
+  })
+}
+
+function report (cmd) {
+  clocker = initialize(cmd)
+  var filter = getFilter(cmd)
+
+  var reportDay = (cmd.reportDay && typeof cmd.reportDay === 'string') ? cmd.reportDay : getDate('today')
+  var reportDayTomorrow = new Date(reportDay)
+  reportDayTomorrow.setDate(reportDayTomorrow.getDate() + 1)
+
+  filter.gt = reportDay
+
+  console.log('Report for %s:', printDate(reportDay))
+
+  var sumsByType = {}
+  var totalSum = 0
+  clocker.dataStream(filter).on('error', function (err) {
+    ifError(err)
+  }).on('end', function () {
+    console.log('')
+    for (var stype in sumsByType) {
+      console.log('%s: %s', stype, Clocker.formatElapsed(sumsByType[stype]))
+      totalSum += sumsByType[stype]
+    }
+    console.log('\ntotal: %s', Clocker.formatElapsed(totalSum))
+
+    success()
+  }).on('data', function (entry) {
+    printEntry(entry)
+
+    if (sumsByType[entry.data.type]) {
+      sumsByType[entry.data.type] += entry.elapsed
+    } else {
+      sumsByType[entry.data.type] = entry.elapsed
     }
   })
 }
@@ -342,6 +387,10 @@ function getFilter (cmd) {
     }
   }
 
+  if (cmd.gt) {
+    filter.gt = cmd.gt
+  }
+
   return filter
 }
 
@@ -413,6 +462,17 @@ function printMessage (message) {
     })
     console.log()
   }
+}
+
+function printDate (date) {
+  var monthNames = [
+    'January', 'February', 'March',
+    'April', 'May', 'June', 'July',
+    'August', 'September', 'October',
+    'November', 'December'
+  ]
+
+  return date.getDate() + ' ' + monthNames[date.getMonth()] + ' ' + date.getFullYear()
 }
 
 function ifError (err) {
