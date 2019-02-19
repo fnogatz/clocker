@@ -69,6 +69,8 @@ program
   .description('generate invoicer-compatible json output')
   .option('-d, --datadir <path>')
   .option('-t, --type <value>', 'filter by type, a string or /regex/')
+  .option('--gt <date>', 'show dates from gt on')
+  .option('--lt <date>', 'show dates upto')
   .action(aggregateJson)
 
 program
@@ -78,6 +80,8 @@ program
   .option('-d, --datadir <path>')
   .option('-t, --type <value>', 'filter by type, a string or /regex/')
   .option('-v, --verbose', 'also show clocked messages')
+  .option('--gt <date>', 'show dates from gt on')
+  .option('--lt <date>', 'show dates upto')
   .action(list)
 
 program
@@ -389,6 +393,9 @@ function getFilter (cmd) {
 
   if (cmd.gt) {
     filter.gt = cmd.gt
+  }
+  if (cmd.lt) {
+    filter.lt = cmd.lt
   }
 
   return filter
