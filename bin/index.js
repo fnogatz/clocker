@@ -71,6 +71,7 @@ program
   .option('-t, --type <value>', 'filter by type, a string or /regex/')
   .option('--gt <date>', 'show dates from gt on')
   .option('--lt <date>', 'show dates upto')
+  .option('-a, --all', 'include archived dates')
   .action(aggregateJson)
 
 program
@@ -82,6 +83,7 @@ program
   .option('-v, --verbose', 'also show clocked messages')
   .option('--gt <date>', 'show dates from gt on')
   .option('--lt <date>', 'show dates upto')
+  .option('-a, --all', 'include archived dates')
   .action(list)
 
 program
@@ -89,6 +91,7 @@ program
   .description('show all logged hours of a specific day')
   .option('-d, --datadir <path>')
   .option('--reportDay <value>', 'day to use')
+  .option('-a, --all', 'include archived dates')
   .action(report)
 
 program
@@ -124,6 +127,22 @@ program
   .description('launch $EDITOR to edit the record')
   .option('-d, --datadir <path>')
   .action(edit)
+
+program
+  .command('archive [stamp]')
+  .description('archive a range of clocked records or a specific stamp')
+  .option('-d, --datadir <path>')
+  .option('--gt <date>', 'archive dates from gt on')
+  .option('--lt <date>', 'archive dates upto')
+  .action(archive)
+
+program
+  .command('unarchive [stamp]')
+  .description('unarchive a range of clocked records or a specific stamp')
+  .option('-d, --datadir <path>')
+  .option('--gt <date>', 'unarchive dates from gt on')
+  .option('--lt <date>', 'unarchive dates upto')
+  .action(unarchive)
 
 program
   .command('help', {
@@ -320,6 +339,50 @@ function remove (stamp, cmd) {
   clocker.remove(stamp, nil)
 }
 
+function setArchive (archive, stamp, cmd) {
+  var value = (archive ? true : undefined)
+  var clocker = initialize(cmd)
+
+  if (!stamp && (cmd.lt || cmd.gt)) {
+    // (un)archive range
+    cmd.all = !archive
+    var filter = getFilter(cmd)
+
+    // filter only for (un)archived records
+    var oldTest = filter.test
+    filter.test = (e) => {
+      if (!oldTest(e)) {
+        return false
+      }
+      if (!archive && (!e.data || !e.data.archive)) {
+        return false
+      }
+      return true
+    }
+
+    var stamps = []
+    clocker.dataStream(filter).on('error', function (err) {
+      ifError(err)
+    }).on('end', function () {
+      each(stamps, function (stamp, cb) {
+        clocker.set(stamp, 'archive', value, cb)
+      }, nil)
+    }).on('data', function (entry) {
+      stamps.push(entry.key)
+    })
+  } else {
+    clocker.set(stamp, 'archive', value, nil)
+  }
+}
+
+function archive (stamp, cmd) {
+  setArchive(true, stamp, cmd)
+}
+
+function unarchive (stamp, cmd) {
+  setArchive(false, stamp, cmd)
+}
+
 function edit (stamp, prop, cmd) {
   if (cmd) {
     clocker = initialize(cmd)
@@ -380,6 +443,7 @@ function initialize (cmd) {
 
 function getFilter (cmd) {
   var filter = {}
+  filter.test = (e) => true
 
   if (cmd.type) {
     if (cmd.type[0] === '/' && cmd.type.slice(-1)[0] === '/') {
@@ -398,6 +462,20 @@ function getFilter (cmd) {
     filter.lt = cmd.lt
   }
 
+  var oldTest = filter.test
+  if (!cmd.all) {
+    // filter archived records
+    filter.test = (e) => {
+      if (!oldTest(e)) {
+        return false
+      }
+      if (e.data && e.data.archive) {
+        return false
+      }
+      return true
+    }
+  }
+
   return filter
 }
 
@@ -409,6 +487,19 @@ function dir (cmd) {
   var HOME = process.env.HOME || process.env.USERPROFILE
   var defaultDataDir = path.join(HOME, '.clocker2')
   return defaultDataDir
+}
+
+function each (arr, cb, cbEnd) {
+  if (arr.length === 0) {
+    return cbEnd()
+  }
+
+  cb(arr.shift(), function (err) {
+    if (err) {
+      return cbEnd(err)
+    }
+    each(arr, cb, cbEnd)
+  })
 }
 
 function started (err, stamp) {
