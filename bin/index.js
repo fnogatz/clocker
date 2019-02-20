@@ -272,7 +272,8 @@ function status (stamp, cmd) {
   clocker = initialize(cmd)
   clocker.status(stamp, function (err, status) {
     ifError(err)
-    success(status)
+    console.log(status)
+    success()
   })
 }
 
