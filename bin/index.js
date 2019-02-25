@@ -39,6 +39,7 @@ program.outputHelp = function (cb) {
 
 program
   .command('start')
+  .usage('[options] [-- <data>]')
   .description('start the clock')
   .option('-d, --datadir <path>')
   .option('-t, --type <value>')
