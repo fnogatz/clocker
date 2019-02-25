@@ -79,8 +79,8 @@ program
   .alias('ls')
   .description('show data entries')
   .option('-d, --datadir <path>')
-  .option('-t, --type <value>', 'filter by type, a string or /regex/')
   .option('-v, --verbose', 'also show clocked messages')
+  .option('-t, --type <value>', 'filter by type, a string or /regex/')
   .option('--gt <date>', 'show dates from gt on')
   .option('--lt <date>', 'show dates upto')
   .option('-a, --all', 'include archived dates')
@@ -93,6 +93,17 @@ program
   .option('--reportDay <value>', 'day to use')
   .option('-a, --all', 'include archived dates')
   .action(report)
+
+program
+  .command('csv')
+  .description('generate CSV output')
+  .option('-d, --datadir <path>')
+  .option('-t, --type <value>', 'filter by type, a string or /regex/')
+  .option('--gt <date>', 'show dates from gt on')
+  .option('--lt <date>', 'show dates upto')
+  .option('-a, --all', 'include archived dates')
+  .option('--props <fields>', 'additionally displayed fields', cmdlist)
+  .action(csv)
 
 program
   .command('add <start> <end>')
@@ -265,6 +276,53 @@ function report (cmd) {
     } else {
       sumsByType[entry.data.type] = entry.elapsed
     }
+  })
+}
+
+function csv (cmd) {
+  clocker = initialize(cmd)
+  var filter = getFilter(cmd)
+
+  var additionalFields = []
+  if (cmd.props) {
+    additionalFields = cmd.props
+  }
+
+  // print header
+  var header = 'Key,Date,Start,End,Duration,Archived,Type,Message'
+  if (additionalFields.length) {
+    header += ','
+    header += additionalFields.join(',')
+  }
+  console.log(header)
+
+  clocker.dataStream(filter).on('error', function (err) {
+    ifError(err)
+  }).on('end', function () {
+    success()
+  }).on('data', function (entry) {
+    var data = entry.data || {}
+    var output = '%s,%s,%s,%s,%s,%s,"%s","%s"'
+    var fields = [
+      entry.key,
+      strftime('%F', entry.start),
+      strftime('%T', entry.start),
+      (entry.end === 'NOW' ? 'NOW' : strftime('%T', entry.end)),
+      Clocker.formatElapsed(entry.elapsed),
+      (data.archive ? 'A' : ''),
+      (data.type || '').replace(/"/g, '""'),
+      (data.message || '').replace(/"/g, '""')
+    ]
+    if (additionalFields.length) {
+      output += ','
+      output += additionalFields.map(function () { return '"%s"' }).join(',')
+
+      fields = fields.concat(additionalFields.map(function (prop) {
+        return (entry.data[prop] || '').toString().replace(/"/g, '""')
+      }))
+    }
+
+    console.log.apply(null, [output].concat(fields))
   })
 }
 
@@ -600,4 +658,8 @@ function success (msg) {
   } else {
     process.exit(0)
   }
+}
+
+function cmdlist (val) {
+  return val.split(',')
 }
