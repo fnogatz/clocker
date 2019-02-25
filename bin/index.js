@@ -545,7 +545,7 @@ function dir (cmd) {
   }
 
   var HOME = process.env.HOME || process.env.USERPROFILE
-  var defaultDataDir = path.join(HOME, '.clocker2')
+  var defaultDataDir = path.join(HOME, '.clocker')
   return defaultDataDir
 }
 
