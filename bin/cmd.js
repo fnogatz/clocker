@@ -350,20 +350,20 @@ var d
       const endDay = strftime('%F', end)
 
       var elapsed = 0
-      if(beginDay === reportDay  && endDay === reportDay) {
+      if (beginDay === reportDay && endDay === reportDay) {
         elapsed = (end || new Date()) - begin
-      } else if(beginDay < reportDay && endDay > reportDay) {
+      } else if (beginDay < reportDay && endDay > reportDay) {
         elapsed = 24 * 3600 * 1000
-      } else if(beginDay < reportDay && endDay === reportDay) {
+      } else if (beginDay < reportDay && endDay === reportDay) {
         elapsed = end - reportDayMidnight
-      } else if(beginDay === reportDay && endDay > reportDay) {
+      } else if (beginDay === reportDay && endDay > reportDay) {
         elapsed = reportDayTomorrowMidnight - begin
       }
 
-      if(elapsed !== 0) {
+      if (elapsed !== 0) {
         printEntry(row.key, begin, end, elapsed, row.value.type, row.value.archive)
         sumsByType[row.value.type] ? sumsByType[row.value.type] += elapsed : sumsByType[row.value.type] = elapsed
-       
+
         if (argv.verbose) {
           printMessage(row.value.message)
         }
@@ -532,13 +532,13 @@ function getDate (expr) {
   return d
 }
 
-function getDayOfDate(date) {
-   const day = new Date(date)
-    day.setHours(0)
-    day.setMinutes(0)
-    day.setSeconds(0)
-    day.setMilliseconds(0)
-    return day
+function getDayOfDate (date) {
+  const day = new Date(date)
+  day.setHours(0)
+  day.setMinutes(0)
+  day.setSeconds(0)
+  day.setMilliseconds(0)
+  return day
 }
 
 function updateDate (key, value, old) {
