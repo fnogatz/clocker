@@ -4,7 +4,7 @@ usage:
     Start the clock. Optionally give a TYPE and MESSAGE.
     Optionally set additional DATA in the format --KEY=VALUE.
 
-  clocker stop {-m MESSAGE}
+  clocker stop {-m MESSAGE} [STAMP]
     Stop the clock.
 
   clocker restart [STAMP]

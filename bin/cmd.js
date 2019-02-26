@@ -322,32 +322,52 @@ var d
     var day = argv.reportDay
 
     // get report data
-    var reportDay = (day && typeof day === 'string') ? getDate(day) : new Date()
-    var reportDayTomorrow = new Date(reportDay)
+    const reportDayDate = (day && typeof day === 'string') ? new Date(day) : new Date()
+    const reportDay = strftime('%F', reportDayDate)
+    var reportDayTomorrow = new Date(reportDayDate)
     reportDayTomorrow.setDate(reportDayTomorrow.getDate() + 1)
 
-    console.log('Report for %s:', printDate(reportDay))
+    console.log('Report for %s:', printDate(reportDayDate))
 
     s = db.createReadStream({
-      gt: 'time!' + (strftime('%F', reportDay) || ''),
-      lt: 'time!' + (strftime('%F', reportDayTomorrow) || '~')
+      // Get all entries. This is necessary because the key does not contain information about the end date
+      // and therefore filtering is not possible at the moment.
+      gt: 'time!' + (argv.gt || ''),
+      lt: 'time!' + (argv.lt || '~')
     })
     s.on('error', error)
 
     var sumsByType = {}
     var totalSum = 0
+    const reportDayMidnight = getDayOfDate(reportDayDate)
+    const reportDayTomorrowMidnight = getDayOfDate(reportDayTomorrow)
 
     s.pipe(through(function (row) {
-      var begin = new Date(row.key.split('!')[1])
+      const begin = new Date(row.key.split('!')[1])
       var end = row.value.end && new Date(row.value.end)
-      var elapsed = (end || new Date()) - begin
+      end = (end || new Date())
+      const beginDay = strftime('%F', begin)
+      const endDay = strftime('%F', end)
 
-      printEntry(row.key, begin, end, elapsed, row.value.type, row.value.archive)
-      if (argv.verbose) {
-        printMessage(row.value.message)
+      var elapsed = 0
+      if (beginDay === reportDay && endDay === reportDay) {
+        elapsed = (end || new Date()) - begin
+      } else if (beginDay < reportDay && endDay > reportDay) {
+        elapsed = 24 * 3600 * 1000
+      } else if (beginDay < reportDay && endDay === reportDay) {
+        elapsed = end - reportDayMidnight
+      } else if (beginDay === reportDay && endDay > reportDay) {
+        elapsed = reportDayTomorrowMidnight - begin
       }
 
-      sumsByType[row.value.type] ? sumsByType[row.value.type] += elapsed : sumsByType[row.value.type] = elapsed
+      if (elapsed !== 0) {
+        printEntry(row.key, begin, end, elapsed, row.value.type, row.value.archive)
+        sumsByType[row.value.type] ? sumsByType[row.value.type] += elapsed : sumsByType[row.value.type] = elapsed
+
+        if (argv.verbose) {
+          printMessage(row.value.message)
+        }
+      }
     }, function end () {
       console.log('')
       for (var stype in sumsByType) {
@@ -510,6 +530,15 @@ function getDate (expr) {
   }
 
   return d
+}
+
+function getDayOfDate (date) {
+  const day = new Date(date)
+  day.setHours(0)
+  day.setMinutes(0)
+  day.setSeconds(0)
+  day.setMilliseconds(0)
+  return day
 }
 
 function updateDate (key, value, old) {
