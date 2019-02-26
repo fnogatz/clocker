@@ -206,7 +206,7 @@ test('stop', function (t) {
   t.plan(3)
 
   t.test('without arguments', function (t) {
-    t.plan(1)
+    t.plan(2)
 
     t.test(function (t) {
       var clocker = initialize()
@@ -233,6 +233,38 @@ test('stop', function (t) {
                 })
               })
             })
+          })
+        })
+      })
+    })
+
+    t.test('re-stop updates end time', function (t) {
+      var clocker = initialize()
+
+      clocker.start('10 seconds ago', function (_err, stamp) {
+        clocker.stop(function (err) {
+          t.notOk(err)
+
+          clocker.get(function (err, entry) {
+            t.notOk(err)
+            t.deepEqual(entry, mockup(stamp, {}, { end: entry.end }))
+            t.equal(entry.elapsed, 10, '10 seconds elapsed')
+
+            setTimeout(function () {
+              clocker.stop(function (err) {
+                t.notOk(err)
+
+                clocker.get(function (err, entry) {
+                  t.notOk(err)
+                  t.deepEqual(entry, mockup(stamp, {}, { end: entry.end }))
+                  t.equal(entry.elapsed, 12, '12 seconds elapsed')
+
+                  clocker.close(function () {
+                    t.end()
+                  })
+                })
+              })
+            }, 2000)
           })
         })
       })
