@@ -203,7 +203,41 @@ test('status', function (t) {
 })
 
 test('stop', function (t) {
-  t.plan(2)
+  t.plan(3)
+
+  t.test('without arguments', function (t) {
+    t.plan(1)
+
+    t.test(function (t) {
+      var clocker = initialize()
+
+      clocker.start('2 min ago', function (_err, stamp1) {
+        clocker.start('1min ago', function (_err, stamp2) {
+          clocker.status(stamp1, function (_err, status1) {
+            clocker.status(stamp2, function (_err, status2) {
+              t.ok(/^elapsed time:/.test(status1), 'first running')
+              t.ok(/^elapsed time:/.test(status2), 'second running')
+
+              clocker.stop(function (err) {
+                t.notOk(err)
+
+                clocker.status(stamp1, function (_err, status1) {
+                  clocker.status(stamp2, function (_err, status2) {
+                    t.ok(/^elapsed time:/.test(status1), 'first running')
+                    t.equal(status2, 'stopped', 'second stopped')
+
+                    clocker.close(function () {
+                      t.end()
+                    })
+                  })
+                })
+              })
+            })
+          })
+        })
+      })
+    })
+  })
 
   t.test('with stamp as argument', function (t) {
     t.plan(2)
