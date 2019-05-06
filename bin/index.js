@@ -205,7 +205,7 @@ function start (cmd) {
     })
   }
 
-  clocker.start(data, new Date(), started)
+  clocker.start(data, new Date(), nil)
 }
 
 function stop (stamp, cmd) {
@@ -218,7 +218,7 @@ function stop (stamp, cmd) {
     }
   })
 
-  clocker.stop(stamp, data, stopped)
+  clocker.stop(stamp, data, nil)
 }
 
 function restart (stamp, cmd) {
@@ -560,16 +560,6 @@ function each (arr, cb, cbEnd) {
     }
     each(arr, cb, cbEnd)
   })
-}
-
-function started (err, stamp) {
-  ifError(err)
-  success()
-}
-
-function stopped (err) {
-  ifError(err)
-  success()
 }
 
 function nil (err) {
