@@ -6,9 +6,10 @@
     "clocker": "bin/cmd.js"
   },
   "engines": {
-    "node" : ">= 7"
+    "node": ">= 7"
   },
   "dependencies": {
+    "commander": "^2.18.0",
     "editor": "^0.1.0",
     "json-stable-stringify": "^1.0.0",
     "level": "^3.0.0",
@@ -16,14 +17,18 @@
     "mkdirp": "^0.3.5",
     "parse-messy-time": "^1.2.1",
     "strftime": "~0.6.2",
-    "through": "^2.3.7"
+    "through": "^2.3.7",
+    "through2": "^2.0.3"
   },
   "devDependencies": {
-    "standard": "^11.0.1"
+    "rimraf": "^2.6.2",
+    "standard": "^11.0.1",
+    "tape": "^4.9.1"
   },
   "scripts": {
     "standard": "standard",
-    "test": "npm run standard"
+    "tape": "tape 'test/**/*.js'",
+    "test": "npm run standard && npm run tape"
   },
   "repository": {
     "type": "git",
