@@ -26,7 +26,7 @@ test('start', function (t) {
     t.test('as Date', function (t) {
       var clocker = initialize()
 
-      var date = new Date()
+      var date = new Date('2018-01-01')
       clocker.start(date, function (err, key) {
         t.notOk(err)
         t.ok(key, 'key is generated')
@@ -113,7 +113,7 @@ test('start', function (t) {
   t.test('date and data object given', function (t) {
     var clocker = initialize()
 
-    var date = new Date()
+    var date = new Date('2018-01-01')
     var data = {
       foo: 'bar'
     }
@@ -641,7 +641,7 @@ test('add', function (t) {
       foo: 'bar',
       some: true
     }
-    var end = new Date()
+    var end = new Date('2018-01-01')
 
     clocker.add('2 hours ago', end, data, function (err, stamp) {
       t.notOk(err)
