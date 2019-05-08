@@ -1,9 +1,9 @@
 {
   "name": "clocker",
-  "version": "1.14.3",
+  "version": "1.15.0",
   "description": "track project hours",
   "bin": {
-    "clocker": "bin/cmd.js"
+    "clocker": "bin/index.js"
   },
   "engines": {
     "node": ">= 7"
