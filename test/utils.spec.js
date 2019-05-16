@@ -1,7 +1,5 @@
-const {toStamp} = require('../lib/util')
-
 const test = require('tape')
-const formatElapsed = require('../lib/util').formatElapsed
+const { toStamp, getKey, formatElapsed } = require('../lib/util')
 
 test('formatElapsed', (t) => {
   const testCases = [
@@ -26,6 +24,21 @@ test('toStamp', (t) => {
   testCases.forEach(([stringWithTimestamp, expectedEpochSeconds]) => {
     t.test(`${stringWithTimestamp} => ${expectedEpochSeconds}`, (t) => {
       const result = toStamp(stringWithTimestamp)
+      t.equal(result, expectedEpochSeconds)
+      t.end()
+    })
+  })
+})
+
+test('getKey', (t) => {
+  const testCases = [
+    [NaN, 'time!NaN'],
+    [new Date('2019-05-16'), 'time!2019-05-16 02:00:00'],
+    [new Date(1520921700000), 'time!2018-03-13 07:15:00']
+  ]
+  testCases.forEach(([stringWithTimestamp, expectedEpochSeconds]) => {
+    t.test(`${stringWithTimestamp} => ${expectedEpochSeconds}`, (t) => {
+      const result = getKey(stringWithTimestamp)
       t.equal(result, expectedEpochSeconds)
       t.end()
     })
