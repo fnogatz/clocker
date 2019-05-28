@@ -27,7 +27,7 @@
   },
   "scripts": {
     "standard": "standard",
-    "tape": "tape 'test/**/*.js'",
+    "tape": "tape 'test/**/*.spec.js'",
     "test": "npm run standard && npm run tape"
   },
   "repository": {
