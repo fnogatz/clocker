@@ -1,8 +1,6 @@
-var path = require('path')
-var test = require('tape')
-var rimraf = require('rimraf')
-
-var Clocker = require('../lib/index')
+const test = require('tape')
+const Clocker = require('../lib/index')
+const {initialize} = require('./test-utils')
 
 test('start', function (t) {
   t.plan(4)
@@ -1037,20 +1035,6 @@ test('aggregate', function (t) {
     })
   })
 })
-
-function initialize () {
-  var dataDir = path.join(__dirname, 'datadir')
-
-  // Empty db dir
-  rimraf.sync(path.join(dataDir, 'db'))
-
-  // Initialize clocker
-  var clocker = new Clocker({
-    dir: dataDir
-  })
-
-  return clocker
-}
 
 function mockup (stamp, value, obj) {
   obj = obj || {}
