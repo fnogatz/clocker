@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 
-import {formatElapsed} from '../lib/util'
-
 var path = require('path')
 var os = require('os')
 var fs = require('fs')
@@ -265,10 +263,10 @@ function report (cmd) {
   }).on('end', function () {
     console.log('')
     for (var stype in sumsByType) {
-      console.log('%s: %s', stype, formatElapsed(sumsByType[stype]))
+      console.log('%s: %s', stype, Clocker.formatElapsed(sumsByType[stype]))
       totalSum += sumsByType[stype]
     }
-    console.log('\ntotal: %s', formatElapsed(totalSum))
+    console.log('\ntotal: %s', Clocker.formatElapsed(totalSum))
 
     success()
   }).on('data', function (entry) {
@@ -311,7 +309,7 @@ function csv (cmd) {
       strftime('%F', entry.start),
       strftime('%T', entry.start),
       (entry.end === 'NOW' ? 'NOW' : strftime('%T', entry.end)),
-      formatElapsed(entry.elapsed),
+      Clocker.formatElapsed(entry.elapsed),
       (data.archive ? 'A' : ''),
       (data.type || '').replace(/"/g, '""'),
       (data.message || '').replace(/"/g, '""')
@@ -597,7 +595,7 @@ function printEntry (entry) {
     strftime('%F', entry.start),
     strftime('%T', entry.start),
     (entry.end === 'NOW' ? 'NOW' : strftime('%T', entry.end)),
-    formatElapsed(entry.elapsed),
+    Clocker.formatElapsed(entry.elapsed),
     (data.type ? '  [' + data.type + ']' : ''),
     (data.archive ? ' A' : '')
   )
