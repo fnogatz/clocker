@@ -1,22 +1,35 @@
 const path = require('path')
 const rimraf = require('rimraf')
+const {spawnSync} = require('child_process')
 const Clocker = require('../lib/index')
 
+let dataDir
+
 function initializeClocker () {
-  const dataDir = initializeDB()
+  _initializeDB()
   return new Clocker({
     dir: dataDir
   })
 }
 
-function initializeDB () {
-  const dataDir = path.join(__dirname, 'datadir')
+function createCLIWrapper () {
+  _initializeDB()
+  return {
+    run: _runCLICommand
+  }
+}
+
+function _initializeDB () {
+  dataDir = path.join(__dirname, 'datadir')
   // Empty db dir
   rimraf.sync(path.join(dataDir, 'db'))
-  return dataDir
+}
+
+function _runCLICommand (command) {
+  return spawnSync('./bin/index.js', [...command, '-d', dataDir], {encoding: 'utf-8'})
 }
 
 module.exports = {
   initializeClocker,
-  initializeDB
+  createCLIWrapper
 }
