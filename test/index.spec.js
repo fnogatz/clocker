@@ -1,14 +1,12 @@
-var path = require('path')
-var test = require('tape')
-var rimraf = require('rimraf')
-
-var Clocker = require('../lib/index')
+const test = require('tape')
+const Clocker = require('../lib/index')
+const {initializeClocker} = require('./test-utils')
 
 test('start', function (t) {
   t.plan(4)
 
   t.test('without arguments', function (t) {
-    var clocker = initialize()
+    var clocker = initializeClocker()
 
     clocker.start(function (err, key) {
       t.notOk(err)
@@ -24,7 +22,7 @@ test('start', function (t) {
     t.plan(2)
 
     t.test('as Date', function (t) {
-      var clocker = initialize()
+      var clocker = initializeClocker()
 
       var date = new Date('2018-01-01')
       clocker.start(date, function (err, key) {
@@ -38,7 +36,7 @@ test('start', function (t) {
     })
 
     t.test('as String', function (t) {
-      var clocker = initialize()
+      var clocker = initializeClocker()
 
       clocker.start('2 hours ago', function (err, key) {
         t.notOk(err)
@@ -55,7 +53,7 @@ test('start', function (t) {
     t.plan(3)
 
     t.test('with "type" property given', function (t) {
-      var clocker = initialize()
+      var clocker = initializeClocker()
 
       var data = {
         type: 'some'
@@ -71,7 +69,7 @@ test('start', function (t) {
     })
 
     t.test('some data object given', function (t) {
-      var clocker = initialize()
+      var clocker = initializeClocker()
 
       var data = {
         foo: 'bar',
@@ -94,7 +92,7 @@ test('start', function (t) {
 
       reservedWords.forEach(function (reserved) {
         t.test('key "' + reserved + '" not allowed', function (t) {
-          var clocker = initialize()
+          var clocker = initializeClocker()
           var obj = {}
           obj[reserved] = true
 
@@ -111,7 +109,7 @@ test('start', function (t) {
   })
 
   t.test('date and data object given', function (t) {
-    var clocker = initialize()
+    var clocker = initializeClocker()
 
     var date = new Date('2018-01-01')
     var data = {
@@ -132,7 +130,7 @@ test('status', function (t) {
   t.plan(3)
 
   t.test('start+stop', function (t) {
-    var clocker = initialize()
+    var clocker = initializeClocker()
 
     clocker.status(function (err, status) {
       t.notOk(err)
@@ -159,7 +157,7 @@ test('status', function (t) {
   })
 
   t.test('correct output', function (t) {
-    var clocker = initialize()
+    var clocker = initializeClocker()
 
     clocker.start('2 hours ago', function () {
       clocker.status(function (err, status) {
@@ -175,7 +173,7 @@ test('status', function (t) {
   })
 
   t.test('with given stamp', function (t) {
-    var clocker = initialize()
+    var clocker = initializeClocker()
 
     clocker.status(function (err, status) {
       t.notOk(err)
@@ -209,7 +207,7 @@ test('stop', function (t) {
     t.plan(2)
 
     t.test(function (t) {
-      var clocker = initialize()
+      var clocker = initializeClocker()
 
       clocker.start('2 min ago', function (_err, stamp1) {
         clocker.start('1min ago', function (_err, stamp2) {
@@ -239,7 +237,7 @@ test('stop', function (t) {
     })
 
     t.test('re-stop updates end time', function (t) {
-      var clocker = initialize()
+      var clocker = initializeClocker()
 
       clocker.start('10 seconds ago', function (_err, stamp) {
         clocker.stop(function (err) {
@@ -275,7 +273,7 @@ test('stop', function (t) {
     t.plan(2)
 
     t.test(function (t) {
-      var clocker = initialize()
+      var clocker = initializeClocker()
 
       clocker.start('2 min ago', function (_err, stamp1) {
         clocker.start('1min ago', function (_err, stamp2) {
@@ -302,7 +300,7 @@ test('stop', function (t) {
     })
 
     t.test(function (t) {
-      var clocker = initialize()
+      var clocker = initializeClocker()
 
       clocker.start('2 min ago', function (_err, stamp1) {
         clocker.start('1min ago', function (_err, stamp2) {
@@ -330,7 +328,7 @@ test('stop', function (t) {
   })
 
   t.test('with data as parameter', function (t) {
-    var clocker = initialize()
+    var clocker = initializeClocker()
 
     clocker.start({ some: 'thing' }, '1min ago', function (_err, stamp) {
       clocker.stop({ foo: 'bar' }, function (err) {
@@ -357,7 +355,7 @@ test('get', function (t) {
   t.plan(4)
 
   t.test('without parameter', function (t) {
-    var clocker = initialize()
+    var clocker = initializeClocker()
 
     clocker.start(function (_err, stamp) {
       clocker.get(function (err, entry) {
@@ -372,7 +370,7 @@ test('get', function (t) {
   })
 
   t.test('Date as parameter', function (t) {
-    var clocker = initialize()
+    var clocker = initializeClocker()
 
     var date1 = new Date('2018-01-01')
     var value1 = { foo: 'bar1' }
@@ -401,7 +399,7 @@ test('get', function (t) {
   })
 
   t.test('stamp as parameter', function (t) {
-    var clocker = initialize()
+    var clocker = initializeClocker()
 
     var date1 = new Date('2018-01-01')
     var value1 = { foo: 'bar1' }
@@ -428,7 +426,7 @@ test('get', function (t) {
   })
 
   t.test('get data object', function (t) {
-    var clocker = initialize()
+    var clocker = initializeClocker()
 
     var data = {
       foo: 'bar',
@@ -454,7 +452,7 @@ test('set', function (t) {
     t.plan(2)
 
     t.test('with key/value pair', function (t) {
-      var clocker = initialize()
+      var clocker = initializeClocker()
 
       var data = {
         foo: 'bar',
@@ -477,7 +475,7 @@ test('set', function (t) {
     })
 
     t.test('with object', function (t) {
-      var clocker = initialize()
+      var clocker = initializeClocker()
 
       var data = {
         foo: 'bar',
@@ -501,7 +499,7 @@ test('set', function (t) {
   })
 
   t.test('without stamp argument', function (t) {
-    var clocker = initialize()
+    var clocker = initializeClocker()
 
     var data = {
       foo: 'bar',
@@ -524,7 +522,7 @@ test('set', function (t) {
   })
 
   t.test('special key: start', function (t) {
-    var clocker = initialize()
+    var clocker = initializeClocker()
 
     var data = {
       foo: 'bar',
@@ -547,7 +545,7 @@ test('set', function (t) {
   })
 
   t.test('special key: end', function (t) {
-    var clocker = initialize()
+    var clocker = initializeClocker()
 
     var data = {
       foo: 'bar',
@@ -571,7 +569,7 @@ test('set', function (t) {
 })
 
 test('restart', function (t) {
-  var clocker = initialize()
+  var clocker = initializeClocker()
 
   var data = {
     foo: 'bar',
@@ -602,7 +600,7 @@ test('add', function (t) {
   t.plan(3)
 
   t.test('Date arguments', function (t) {
-    var clocker = initialize()
+    var clocker = initializeClocker()
 
     var start = new Date('2018-01-01')
     var stop = new Date('2018-01-02')
@@ -622,7 +620,7 @@ test('add', function (t) {
   })
 
   t.test('String arguments', function (t) {
-    var clocker = initialize()
+    var clocker = initializeClocker()
 
     clocker.add('yesterday 1:00', '2 minutes ago', function (err, stamp) {
       t.notOk(err)
@@ -635,7 +633,7 @@ test('add', function (t) {
   })
 
   t.test('with data object given', function (t) {
-    var clocker = initialize()
+    var clocker = initializeClocker()
 
     var data = {
       foo: 'bar',
@@ -663,7 +661,7 @@ test('remove', function (t) {
   t.plan(3)
 
   t.test('without parameter', function (t) {
-    var clocker = initialize()
+    var clocker = initializeClocker()
 
     clocker.start(function (_err, stamp) {
       clocker.get(stamp, function (_err, entry) {
@@ -683,7 +681,7 @@ test('remove', function (t) {
   })
 
   t.test('Date as parameter', function (t) {
-    var clocker = initialize()
+    var clocker = initializeClocker()
 
     var date1 = new Date('2018-01-01')
     var date2 = new Date('2018-02-02')
@@ -711,7 +709,7 @@ test('remove', function (t) {
   })
 
   t.test('stamp as parameter', function (t) {
-    var clocker = initialize()
+    var clocker = initializeClocker()
 
     var date1 = new Date('2018-01-01')
     var date2 = new Date('2018-02-02')
@@ -741,7 +739,7 @@ test('data', function (t) {
   t.plan(3)
 
   t.test('without parameter', function (t) {
-    var clocker = initialize()
+    var clocker = initializeClocker()
 
     var value = {
       foo: 'bar'
@@ -762,7 +760,7 @@ test('data', function (t) {
   })
 
   t.test('empty object parameter', function (t) {
-    var clocker = initialize()
+    var clocker = initializeClocker()
 
     var value = {
       foo: 'bar'
@@ -789,7 +787,7 @@ test('data', function (t) {
       t.plan(3)
 
       t.test(function (t) {
-        var clocker = initialize()
+        var clocker = initializeClocker()
 
         var value = {
           foo: 'bar'
@@ -810,7 +808,7 @@ test('data', function (t) {
       })
 
       t.test(function (t) {
-        var clocker = initialize()
+        var clocker = initializeClocker()
 
         var value = {
           foo: 'bar'
@@ -829,7 +827,7 @@ test('data', function (t) {
       })
 
       t.test(function (t) {
-        var clocker = initialize()
+        var clocker = initializeClocker()
 
         var value = {
           foo: 'bar'
@@ -855,7 +853,7 @@ test('data', function (t) {
       t.plan(2)
 
       t.test(function (t) {
-        var clocker = initialize()
+        var clocker = initializeClocker()
 
         var value = {
           foo: 'bar'
@@ -878,7 +876,7 @@ test('data', function (t) {
       })
 
       t.test(function (t) {
-        var clocker = initialize()
+        var clocker = initializeClocker()
 
         var value = {
           foo: 'bar'
@@ -900,7 +898,7 @@ test('data', function (t) {
     })
 
     t.test('test', function (t) {
-      var clocker = initialize()
+      var clocker = initializeClocker()
 
       clocker.add('08:00', '10:00', { type: 't1' }, function (_err, stamp1) {
         clocker.add('11:00', '13:00', { type: 't2' }, function (_err, stamp2) {
@@ -934,7 +932,7 @@ test('aggregate', function (t) {
     t.plan(3)
 
     t.test('simple not overlapping days', function (t) {
-      var clocker = initialize()
+      var clocker = initializeClocker()
 
       clocker.add('2018-01-01 08:00', '2018-01-01 10:00', { type: 't1' }, function (_err, stamp1) {
         clocker.add('2018-01-01 11:00', '2018-01-01 13:00', { type: 't2' }, function (_err, stamp2) {
@@ -956,7 +954,7 @@ test('aggregate', function (t) {
     })
 
     t.test('overlapping days', function (t) {
-      var clocker = initialize()
+      var clocker = initializeClocker()
 
       clocker.add('2018-01-01 08:00', '2018-01-01 09:00', { type: 't1' }, function (_err, stamp1) {
         clocker.add('2018-01-01 22:00', '2018-01-02 03:00', { type: 't2' }, function (_err, stamp2) {
@@ -978,7 +976,7 @@ test('aggregate', function (t) {
     })
 
     t.test('overlapping days, multiple days', function (t) {
-      var clocker = initialize()
+      var clocker = initializeClocker()
 
       clocker.add('2018-01-01 08:00', '2018-01-01 09:00', { type: 't1' }, function (_err, stamp1) {
         clocker.add('2018-01-01 22:00', '2018-01-03 03:00', { type: 't2' }, function (_err, stamp2) {
@@ -1005,7 +1003,7 @@ test('aggregate', function (t) {
     t.plan(1)
 
     t.test('test for type', function (t) {
-      var clocker = initialize()
+      var clocker = initializeClocker()
 
       clocker.add('2018-01-01 08:00', '2018-01-01 09:00', { type: 't1' }, function (_err, stamp1) {
         clocker.add('2018-01-01 11:00', '2018-01-01 13:00', { type: 't2' }, function (_err, stamp2) {
@@ -1037,20 +1035,6 @@ test('aggregate', function (t) {
     })
   })
 })
-
-function initialize () {
-  var dataDir = path.join(__dirname, 'datadir')
-
-  // Empty db dir
-  rimraf.sync(path.join(dataDir, 'db'))
-
-  // Initialize clocker
-  var clocker = new Clocker({
-    dir: dataDir
-  })
-
-  return clocker
-}
 
 function mockup (stamp, value, obj) {
   obj = obj || {}

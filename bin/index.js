@@ -91,6 +91,7 @@ program
   .command('report')
   .description('show all logged hours of a specific day')
   .option('-d, --datadir <path>')
+  .option('-v, --verbose', 'also show clocked messages')
   .option('--reportDay <value>', 'day to use')
   .option('-a, --all', 'include archived dates')
   .action(report)
@@ -271,6 +272,10 @@ function report (cmd) {
     success()
   }).on('data', function (entry) {
     printEntry(entry)
+
+    if (cmd.verbose) {
+      printMessage(entry.data.message)
+    }
 
     if (sumsByType[entry.data.type]) {
       sumsByType[entry.data.type] += entry.elapsed
