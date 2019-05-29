@@ -3,7 +3,7 @@ const rimraf = require('rimraf')
 const Clocker = require('../lib/index')
 
 module.exports = {
-  initialize () {
+  initializeClocker () {
     var dataDir = path.join(__dirname, 'datadir')
 
     // Empty db dir
