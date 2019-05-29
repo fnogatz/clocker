@@ -7,7 +7,6 @@ var program = require('commander')
 var strftime = require('strftime')
 var editor = require('editor')
 var stringify = require('json-stable-stringify')
-var parseTime = require('parse-messy-time')
 var tmpdir = os.tmpdir()
 
 var Clocker = require('../lib/index')
@@ -249,11 +248,11 @@ function report (cmd) {
   clocker = initialize(cmd)
   var filter = getFilter(cmd)
 
-  var reportDay = (cmd.reportDay && typeof cmd.reportDay === 'string') ? cmd.reportDay : getDate('today')
-  var reportDayTomorrow = new Date(reportDay)
-  reportDayTomorrow.setDate(reportDayTomorrow.getDate() + 1)
-
+  var reportDay = (cmd.reportDay && typeof cmd.reportDay === 'string') ? cmd.reportDay : 'today'
+  reportDay = getDate(reportDay)
+  var reportDayTomorrow = new Date(reportDay.getTime() + (24 * 60 * 60 * 1000))
   filter.gt = reportDay
+  filter.lt = reportDayTomorrow
 
   console.log('Report for %s:', printDate(reportDay))
 
@@ -615,7 +614,7 @@ function printMessage (message) {
 
 function printDate (date) {
   if (typeof date === 'string') {
-    date = parseTime(date)
+    date = getDate(date)
     return printDate(date)
   }
 
