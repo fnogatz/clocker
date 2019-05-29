@@ -7,6 +7,7 @@ var program = require('commander')
 var strftime = require('strftime')
 var editor = require('editor')
 var stringify = require('json-stable-stringify')
+var parseTime = require('parse-messy-time')
 var tmpdir = os.tmpdir()
 
 var Clocker = require('../lib/index')
@@ -613,6 +614,11 @@ function printMessage (message) {
 }
 
 function printDate (date) {
+  if (typeof date === 'string') {
+    date = parseTime(date)
+    return printDate(date)
+  }
+
   var monthNames = [
     'January', 'February', 'March',
     'April', 'May', 'June', 'July',
