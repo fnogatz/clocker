@@ -508,15 +508,14 @@ function initialize (cmd) {
 
 function getFilter (cmd) {
   var filter = {}
-  filter.test = (e) => true
 
   if (cmd.type) {
     if (cmd.type[0] === '/' && cmd.type.slice(-1)[0] === '/') {
       // regex
-      filter.test = (e) => RegExp(cmd.type.slice(1, -1)).test(e.data.type)
+      extendFilter(filter, (e) => RegExp(cmd.type.slice(1, -1)).test(e.data.type))
     } else {
       // string
-      filter.test = (e) => e.data.type === cmd.type
+      extendFilter(filter, (e) => e.data.type === cmd.type)
     }
   }
 
@@ -527,21 +526,22 @@ function getFilter (cmd) {
     filter.lt = cmd.lt
   }
 
-  var oldTest = filter.test
   if (!cmd.all) {
     // filter archived records
-    filter.test = (e) => {
-      if (!oldTest(e)) {
-        return false
-      }
-      if (e.data && e.data.archive) {
-        return false
-      }
-      return true
-    }
+    extendFilter(filter, (e) => !(e.data && e.data.archive))
   }
 
   return filter
+}
+
+function extendFilter (filter, func) {
+  if (!filter.test) {
+    filter.test = func
+    return
+  }
+
+  var oldTest = filter.test
+  filter.test = (e) => (oldTest(e) && func(e))
 }
 
 function dir (cmd) {
