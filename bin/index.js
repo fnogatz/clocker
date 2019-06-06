@@ -69,7 +69,8 @@ program
   .command('data')
   .description('generate invoicer-compatible json output')
   .option('-d, --datadir <path>')
-  .option('-t, --type <value>', 'filter by type, a string or /regex/')
+  .option('--filter <key=value>', 'filter by key, value as string or /regex/', collect, [])
+  .option('-t, --type <value>', 'short for --filter "type=<value>"')
   .option('--gt <date>', 'show dates from gt on')
   .option('--lt <date>', 'show dates upto')
   .option('-a, --all', 'include archived dates')
@@ -81,7 +82,8 @@ program
   .description('show data entries')
   .option('-d, --datadir <path>')
   .option('-v, --verbose', 'also show clocked messages')
-  .option('-t, --type <value>', 'filter by type, a string or /regex/')
+  .option('--filter <key=value>', 'filter by key, value as string or /regex/', collect, [])
+  .option('-t, --type <value>', 'short for --filter "type=<value>"')
   .option('--gt <date>', 'show dates from gt on')
   .option('--lt <date>', 'show dates upto')
   .option('-a, --all', 'include archived dates')
@@ -100,7 +102,8 @@ program
   .command('csv')
   .description('generate CSV output')
   .option('-d, --datadir <path>')
-  .option('-t, --type <value>', 'filter by type, a string or /regex/')
+  .option('--filter <key=value>', 'filter by key, value as string or /regex/', collect, [])
+  .option('-t, --type <value>', 'short for --filter "type=<value>"')
   .option('--gt <date>', 'show dates from gt on')
   .option('--lt <date>', 'show dates upto')
   .option('-a, --all', 'include archived dates')
@@ -508,17 +511,22 @@ function initialize (cmd) {
 
 function getFilter (cmd) {
   var filter = {}
-  filter.test = (e) => true
+  cmd.filter = cmd.filter || []
 
   if (cmd.type) {
-    if (cmd.type[0] === '/' && cmd.type.slice(-1)[0] === '/') {
-      // regex
-      filter.test = (e) => RegExp(cmd.type.slice(1, -1)).test(e.data.type)
+    cmd.filter.push('type=' + cmd.type)
+  }
+
+  cmd.filter.forEach((cmdFilter) => {
+    var kv = cmdFilter.split('=')
+    if (isRegex(kv[1])) {
+      extendFilter(filter, (e) => RegExp(kv[1].slice(1, -1)).test(e.data[kv[0]]))
     } else {
       // string
-      filter.test = (e) => e.data.type === cmd.type
+      // ignore eslint rule "eqeqeq" to allow type-converting comparison
+      extendFilter(filter, (e) => e.data[kv[0]] == kv[1]) // eslint-disable-line eqeqeq
     }
-  }
+  })
 
   if (cmd.gt) {
     filter.gt = cmd.gt
@@ -527,21 +535,22 @@ function getFilter (cmd) {
     filter.lt = cmd.lt
   }
 
-  var oldTest = filter.test
   if (!cmd.all) {
     // filter archived records
-    filter.test = (e) => {
-      if (!oldTest(e)) {
-        return false
-      }
-      if (e.data && e.data.archive) {
-        return false
-      }
-      return true
-    }
+    extendFilter(filter, (e) => !(e.data && e.data.archive))
   }
 
   return filter
+}
+
+function extendFilter (filter, func) {
+  if (!filter.test) {
+    filter.test = func
+    return
+  }
+
+  var oldTest = filter.test
+  filter.test = (e) => (oldTest(e) && func(e))
 }
 
 function dir (cmd) {
@@ -661,6 +670,15 @@ function success (msg) {
   }
 }
 
+function isRegex (str) {
+  return (str[0] === '/' && str.slice(-1)[0] === '/')
+}
+
 function cmdlist (val) {
   return val.split(',')
+}
+
+function collect (val, memo) {
+  memo.push(val)
+  return memo
 }
