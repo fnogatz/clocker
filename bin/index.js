@@ -203,7 +203,7 @@ function start (cmd) {
 
   if (argvs[1]) {
     argvs[1].forEach(function (prop) {
-      prop = prop.trimLeft('-')
+      prop = prop.replace(/^-+/, '')
       var [key, value] = prop.split('=')
       data[key] = value
     })
