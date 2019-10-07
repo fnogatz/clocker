@@ -596,6 +596,68 @@ test('restart', function (t) {
   })
 })
 
+test('move', function (t) {
+  t.plan(2)
+
+  t.test('only Date argument', function (t) {
+    var clocker = initializeClocker()
+
+    var start = new Date('2018-01-01')
+    var stop = new Date('2018-01-02')
+    var data = {
+      foo: 'bar',
+      some: true
+    }
+
+    clocker.add(start, stop, data, function (_err, stamp) {
+      var newStart = new Date('2018-01-11')
+      clocker.move(newStart, function (err, newStamp) {
+        t.notOk(err)
+        t.ok(newStamp)
+
+        clocker.get(newStamp, function (err, data2) {
+          t.notOk(err)
+          t.deepEqual(data2, mockup(newStamp, data, { start: newStart, end: new Date('2018-01-12') }))
+          t.notEqual(stamp, newStamp, 'stamp has changed')
+
+          clocker.close(function () {
+            t.end()
+          })
+        })
+      })
+    })
+  })
+
+  t.test('Date and stamp argument', function (t) {
+    var clocker = initializeClocker()
+
+    var start = new Date('2018-01-01')
+    var stop = new Date('2018-01-02')
+    var data = {
+      foo: 'bar',
+      some: true
+    }
+
+    clocker.add(start, stop, data, function (_err, stamp) {
+      var newStart = new Date('2018-01-11')
+      clocker.move(stamp, newStart, function (err, newStamp) {
+        t.notOk(err)
+        t.ok(newStamp)
+
+        clocker.get(newStamp, function (err, data2) {
+          t.notOk(err)
+          t.deepEqual(data2, mockup(newStamp, data, { start: newStart, end: new Date('2018-01-12') }))
+          t.notEqual(stamp, newStamp, 'stamp has changed')
+
+          clocker.close(function () {
+            t.end()
+          })
+        })
+      })
+    })
+  })
+})
+
 test('add', function (t) {
   t.plan(3)
 

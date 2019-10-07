@@ -145,6 +145,14 @@ program
   .action(edit)
 
 program
+  .command('move <stamp> [start]')
+  .usage('[options] [stamp] <start>')
+  .alias('mv')
+  .description('move an entry to a new start')
+  .option('-d, --datadir <path>')
+  .action(move)
+
+program
   .command('archive [stamp]')
   .description('archive a range of clocked records or a specific stamp')
   .option('-d, --datadir <path>')
@@ -385,6 +393,17 @@ function set (stamp, key, value, cmd) {
 
   clocker = initialize(cmd)
   clocker.set(stamp, key, value, nil)
+}
+
+function move (stamp, start, cmd) {
+  if (typeof start === 'undefined') {
+    // move properties since only stamp is optional
+    start = stamp
+    stamp = undefined
+  }
+
+  clocker = initialize(cmd)
+  clocker.move(stamp, start, nil)
 }
 
 function add (start, end, cmd) {

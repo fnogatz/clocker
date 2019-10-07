@@ -140,6 +140,9 @@ usage:
     Launch $EDITOR to edit the record at STAMP.
     Optionally edit a single KEY.
 
+  clocker move [STAMP] START
+    Move the data at STAMP to the new START, maintaining the elapsed time.
+
   clocker archive {--lt=DATE, --gt=DATE}
   clocker archive [STAMP...]
     Archive a range of clocked records or a list of STAMPs.
