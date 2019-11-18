@@ -597,7 +597,7 @@ test('restart', function (t) {
 })
 
 test('move', function (t) {
-  t.plan(2)
+  t.plan(3)
 
   t.test('only Date argument', function (t) {
     var clocker = initializeClocker()
@@ -652,6 +652,24 @@ test('move', function (t) {
           clocker.close(function () {
             t.end()
           })
+        })
+      })
+    })
+  })
+
+  t.test('throws on invalid date', function (t) {
+    var clocker = initializeClocker()
+
+    var start = new Date('2018-01-01')
+    var stop = new Date('2018-01-02')
+    clocker.add(start, stop, function (_err, stamp) {
+      var invalidStart = 123
+
+      clocker.move(stamp, invalidStart, function (err) {
+        t.ok(err)
+
+        clocker.close(function () {
+          t.end()
         })
       })
     })
