@@ -663,7 +663,7 @@ function printDate (date) {
 
 function ifError (err) {
   if (err) {
-    console.log(err)
+    console.log(`Error: ${err.message}`)
 
     if (clocker) {
       clocker.close(function () {
