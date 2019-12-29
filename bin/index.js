@@ -73,6 +73,7 @@ program
   .option('-t, --type <value>', 'short for --filter "type=<value>"')
   .option('--gt <date>', 'show dates from gt on')
   .option('--lt <date>', 'show dates upto')
+  .option('-r, --rate <value>', 'add rate property', parseFloat)
   .option('-a, --all', 'include archived dates')
   .action(aggregateJson)
 
@@ -362,6 +363,10 @@ function aggregateJson (cmd) {
     var json = {
       hours: [],
       title: 'consulting'
+    }
+
+    if (cmd.rate) {
+      json.rate = cmd.rate
     }
 
     for (var date in data) {
