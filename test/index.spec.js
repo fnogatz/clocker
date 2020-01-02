@@ -677,7 +677,7 @@ test('move', function (t) {
 })
 
 test('add', function (t) {
-  t.plan(3)
+  t.plan(4)
 
   t.test('Date arguments', function (t) {
     var clocker = initializeClocker()
@@ -719,19 +719,30 @@ test('add', function (t) {
       foo: 'bar',
       some: true
     }
-    var end = new Date('2018-01-01')
 
-    clocker.add('2 hours ago', end, data, function (err, stamp) {
+    clocker.add('yesterday 1:00', '2 minutes ago', data, function (err, stamp) {
       t.notOk(err)
       t.ok(stamp)
 
       clocker.get(stamp, function (err, data2) {
         t.notOk(err)
-        t.deepEqual(data2, mockup(stamp, data, { end: end }))
+        t.deepEqual(data2, mockup(stamp, data, { end: data2.end }))
 
         clocker.close(function () {
           t.end()
         })
+      })
+    })
+  })
+
+  t.test('error for end < start', function (t) {
+    var clocker = initializeClocker()
+
+    clocker.add('02:00', '01:00', function (err) {
+      t.ok(err)
+
+      clocker.close(function () {
+        t.end()
       })
     })
   })
