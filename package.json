@@ -6,7 +6,7 @@
     "clocker": "bin/index.js"
   },
   "engines": {
-    "node": ">= 7"
+    "node": ">= 8.6.0"
   },
   "dependencies": {
     "commander": "^2.18.0",
@@ -16,7 +16,6 @@
     "mkdirp": "^0.3.5",
     "parse-messy-time": "^1.2.1",
     "strftime": "~0.6.2",
-    "through": "^2.3.7",
     "through2": "^2.0.3"
   },
   "devDependencies": {
