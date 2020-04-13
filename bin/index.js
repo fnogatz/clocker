@@ -155,8 +155,10 @@ program
 
 program
   .command('archive [stamp]')
-  .description('archive a range of clocked records or a specific stamp')
+  .description('archive a range or filtered set of clocked records or a specific stamp')
   .option('-d, --datadir <path>')
+  .option('--filter <key=value>', 'filter by key, value as string or /regex/', collect, [])
+  .option('-t, --type <value>', 'short for --filter "type=<value>"')
   .option('--gt <date>', 'archive dates from gt on')
   .option('--lt <date>', 'archive dates upto')
   .action(archive)
@@ -435,7 +437,7 @@ function setArchive (archive, stamp, cmd) {
   var value = (archive ? true : undefined)
   var clocker = initialize(cmd)
 
-  if (!stamp && (cmd.lt || cmd.gt)) {
+  if (!stamp && (cmd.lt || cmd.gt || cmd.filter || cmd.type)) {
     // (un)archive range
     cmd.all = !archive
     var filter = getFilter(cmd)
