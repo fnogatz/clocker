@@ -50,6 +50,7 @@ program
   .command('stop [stamp]')
   .description('stop the clock')
   .option('-d, --datadir <path>')
+  .option('-t, --type <value>', 'use latest of type instead of stamp')
   .option('-m, --message <value>')
   .action(stop)
 
@@ -233,7 +234,22 @@ function stop (stamp, cmd) {
     }
   })
 
-  clocker.stop(stamp, data, nil)
+  if (cmd.type) {
+    if (stamp) {
+      ifError(new Error(`stamp can't be used together with '--type' option`))
+    }
+    var filter = getFilter(cmd)
+    clocker.data(filter, function (err, entries) {
+      ifError(err)
+      if (entries.length === 0) {
+        ifError(new Error(`no matching entries found`))
+      }
+      stamp = entries[entries.length - 1].key
+      clocker.stop(stamp, data, nil)
+    })
+  } else {
+    clocker.stop(stamp, data, nil)
+  }
 }
 
 function restart (stamp, cmd) {
