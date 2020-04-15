@@ -16,14 +16,9 @@ var getDate = util.getDate
 var argvs = splitArgvs(process.argv)
 
 program
+  .name('clocker')
   .version(require('../package.json').version)
   .description('track project hours')
-
-// Show info on unknown command
-program.on('command:*', function () {
-  console.error('Invalid command: %s\nSee --help for a list of available commands.', argvs[0].slice(2).join(' '))
-  process.exit(1)
-})
 
 // Adjust help output for set command
 //   as it has two optional arguments,
