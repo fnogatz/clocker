@@ -13,12 +13,16 @@ var Clocker = require('../lib/index')
 var util = require('../lib/util')
 var getDate = util.getDate
 
+var HOME = process.env.HOME || process.env.USERPROFILE
+var defaultDataDir = path.join(HOME, '.clocker')
+
 var argvs = splitArgvs(process.argv)
 
 program
   .name('clocker')
   .version(require('../package.json').version)
   .description('track project hours')
+  .option('-d, --datadir <path>', 'directory for storage', defaultDataDir)
 
 // Adjust help output for set command
 //   as it has two optional arguments,
@@ -32,11 +36,15 @@ program.outputHelp = function (cb) {
   outputHelp(newCb)
 }
 
+var datadir
+program.on('option:datadir', function (value) {
+  datadir = value
+})
+
 program
   .command('start')
   .usage('[options] [-- <data>]')
   .description('start the clock')
-  .option('-d, --datadir <path>')
   .option('-t, --type <value>')
   .option('-m, --message <value>')
   .action(start)
@@ -44,7 +52,6 @@ program
 program
   .command('stop [stamp]')
   .description('stop the clock')
-  .option('-d, --datadir <path>')
   .option('-t, --type <value>', 'use latest of type instead of stamp')
   .option('-m, --message <value>')
   .action(stop)
@@ -52,19 +59,16 @@ program
 program
   .command('restart [stamp]')
   .description('restart the clock')
-  .option('-d, --datadir <path>')
   .action(restart)
 
 program
   .command('status [stamp]')
   .description('show the elapsed time')
-  .option('-d, --datadir <path>')
   .action(status)
 
 program
   .command('data')
   .description('generate invoicer-compatible json output')
-  .option('-d, --datadir <path>')
   .option('--filter <key=value>', 'filter by key, value as string or /regex/', collect, [])
   .option('-t, --type <value>', 'short for --filter "type=<value>"')
   .option('--gt <date>', 'show dates from gt on')
@@ -77,7 +81,6 @@ program
   .command('list')
   .alias('ls')
   .description('show data entries')
-  .option('-d, --datadir <path>')
   .option('-v, --verbose', 'also show clocked messages')
   .option('--filter <key=value>', 'filter by key, value as string or /regex/', collect, [])
   .option('-t, --type <value>', 'short for --filter "type=<value>"')
@@ -89,7 +92,6 @@ program
 program
   .command('report')
   .description('show all logged hours of a specific day')
-  .option('-d, --datadir <path>')
   .option('-v, --verbose', 'also show clocked messages')
   .option('--reportDay <value>', 'day to use')
   .option('-a, --all', 'include archived dates')
@@ -98,7 +100,6 @@ program
 program
   .command('csv')
   .description('generate CSV output')
-  .option('-d, --datadir <path>')
   .option('--filter <key=value>', 'filter by key, value as string or /regex/', collect, [])
   .option('-t, --type <value>', 'short for --filter "type=<value>"')
   .option('--gt <date>', 'show dates from gt on')
@@ -110,7 +111,6 @@ program
 program
   .command('add <start> <end>')
   .description('add an entry')
-  .option('-d, --datadir <path>')
   .option('-t, --type <value>')
   .option('-m, --message <value>')
   .action(add)
@@ -118,27 +118,23 @@ program
 program
   .command('get [stamp]')
   .description('get the raw data')
-  .option('-d, --datadir <path>')
   .action(get)
 
 program
   .command('remove [stamp]')
   .alias('rm')
   .description('remove an entry')
-  .option('-d, --datadir <path>')
   .action(remove)
 
 program
   .command('set [stamp] <key> [value]')
   .usage('[options] [stamp] <key> <value>')
   .description('adjust time stamp boundaries or other properties')
-  .option('-d, --datadir <path>')
   .action(set)
 
 program
   .command('edit [stamp] [key]')
   .description('launch $EDITOR to edit the record')
-  .option('-d, --datadir <path>')
   .action(edit)
 
 program
@@ -146,13 +142,11 @@ program
   .usage('[options] [stamp] <start>')
   .alias('mv')
   .description('move an entry to a new start')
-  .option('-d, --datadir <path>')
   .action(move)
 
 program
   .command('archive [stamp]')
   .description('archive a range or filtered set of clocked records or a specific stamp')
-  .option('-d, --datadir <path>')
   .option('--filter <key=value>', 'filter by key, value as string or /regex/', collect, [])
   .option('-t, --type <value>', 'short for --filter "type=<value>"')
   .option('--gt <date>', 'archive dates from gt on')
@@ -162,7 +156,6 @@ program
 program
   .command('unarchive [stamp]')
   .description('unarchive a range of clocked records or a specific stamp')
-  .option('-d, --datadir <path>')
   .option('--gt <date>', 'unarchive dates from gt on')
   .option('--lt <date>', 'unarchive dates upto')
   .action(unarchive)
@@ -542,7 +535,7 @@ function initialize (cmd) {
     process.exit(1)
   }
   return new Clocker({
-    dir: dir(cmd)
+    dir: datadir
   })
 }
 
@@ -588,16 +581,6 @@ function extendFilter (filter, func) {
 
   var oldTest = filter.test
   filter.test = (e) => (oldTest(e) && func(e))
-}
-
-function dir (cmd) {
-  if (cmd.datadir) {
-    return cmd.datadir
-  }
-
-  var HOME = process.env.HOME || process.env.USERPROFILE
-  var defaultDataDir = path.join(HOME, '.clocker')
-  return defaultDataDir
 }
 
 function each (arr, cb, cbEnd) {
