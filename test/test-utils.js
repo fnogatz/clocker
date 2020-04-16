@@ -1,6 +1,6 @@
 const path = require('path')
 const rimraf = require('rimraf')
-const {spawnSync} = require('child_process')
+const { spawnSync } = require('child_process')
 const Clocker = require('../lib/index')
 
 let dataDir
@@ -26,7 +26,7 @@ function _initializeDB () {
 }
 
 function _runCLICommand (command) {
-  return spawnSync('./bin/index.js', [...command, '-d', dataDir], {encoding: 'utf-8'})
+  return spawnSync('./bin/index.js', [...command, '-d', dataDir], { encoding: 'utf-8' })
 }
 
 module.exports = {

@@ -1,5 +1,5 @@
 const test = require('tape')
-const {createCLIWrapper} = require('./test-utils')
+const { createCLIWrapper } = require('./test-utils')
 const strftime = require('strftime')
 
 test('report', t => {

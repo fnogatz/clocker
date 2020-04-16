@@ -1,6 +1,6 @@
 const test = require('tape')
 const Clocker = require('../lib/index')
-const {initializeClocker} = require('./test-utils')
+const { initializeClocker } = require('./test-utils')
 
 test('start', function (t) {
   t.plan(4)
@@ -841,7 +841,7 @@ test('data', function (t) {
 
         var reference = mockup(stamp, value)
 
-        t.deepEqual(data, [ reference ])
+        t.deepEqual(data, [reference])
 
         clocker.close(function () {
           t.end()
@@ -862,7 +862,7 @@ test('data', function (t) {
 
         var reference = mockup(stamp, value)
 
-        t.deepEqual(data, [ reference ])
+        t.deepEqual(data, [reference])
 
         clocker.close(function () {
           t.end()
@@ -889,7 +889,7 @@ test('data', function (t) {
 
             var reference = mockup(stamp, value)
 
-            t.deepEqual(data, [ reference ])
+            t.deepEqual(data, [reference])
 
             clocker.close(function () {
               t.end()
@@ -930,7 +930,7 @@ test('data', function (t) {
 
             var reference = mockup(stamp, value)
 
-            t.deepEqual(data, [ reference ])
+            t.deepEqual(data, [reference])
 
             clocker.close(function () {
               t.end()
@@ -957,7 +957,7 @@ test('data', function (t) {
 
             var reference = mockup(stamp, value)
 
-            t.deepEqual(data, [ reference ])
+            t.deepEqual(data, [reference])
 
             clocker.close(function () {
               t.end()
@@ -997,13 +997,13 @@ test('data', function (t) {
             test: (entry) => entry.data.type === 't1'
           }, function (err, data) {
             t.notOk(err)
-            t.deepEqual(data, [ mockup(stamp1, { type: 't1' }, { end: data[0].end }) ])
+            t.deepEqual(data, [mockup(stamp1, { type: 't1' }, { end: data[0].end })])
 
             clocker.data({
               test: (entry) => entry.data.type === 't2'
             }, function (err, data) {
               t.notOk(err)
-              t.deepEqual(data, [ mockup(stamp2, { type: 't2' }, { end: data[0].end }) ])
+              t.deepEqual(data, [mockup(stamp2, { type: 't2' }, { end: data[0].end })])
 
               clocker.close(function () {
                 t.end()

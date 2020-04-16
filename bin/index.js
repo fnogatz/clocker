@@ -224,13 +224,13 @@ function stop (stamp, cmd) {
 
   if (cmd.type) {
     if (stamp) {
-      ifError(new Error(`stamp can't be used together with '--type' option`))
+      ifError(new Error('stamp can\'t be used together with \'--type\' option'))
     }
     var filter = getFilter(cmd)
     clocker.data(filter, function (err, entries) {
       ifError(err)
       if (entries.length === 0) {
-        ifError(new Error(`no matching entries found`))
+        ifError(new Error('no matching entries found'))
       }
       stamp = entries[entries.length - 1].key
       clocker.stop(stamp, data, nil)
@@ -503,7 +503,7 @@ function edit (stamp, prop, cmd) {
 
     var src = obj.data
     if (typeof prop !== 'undefined') {
-      if (obj.data.hasOwnProperty(prop)) {
+      if (prop in obj.data) {
         src = obj.data[prop]
       } else {
         ifError(new Error('Property not set: ' + prop))
