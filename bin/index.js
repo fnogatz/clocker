@@ -13,6 +13,11 @@ var Clocker = require('../lib/index')
 var util = require('../lib/util')
 var getDate = util.getDate
 
+process.on('uncaughtException', err => {
+  console.log(`error: ${err.message}`)
+  process.exit(1)
+})
+
 var HOME = process.env.HOME || process.env.USERPROFILE
 var defaultDataDir = path.join(HOME, '.clocker')
 
@@ -664,15 +669,7 @@ function printDate (date) {
 
 function ifError (err) {
   if (err) {
-    console.log(`Error: ${err.message}`)
-
-    if (clocker) {
-      clocker.close(function () {
-        process.exit(1)
-      })
-    } else {
-      process.exit(1)
-    }
+    throw err
   }
 }
 
