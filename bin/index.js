@@ -511,7 +511,7 @@ function edit (stamp, prop, cmd) {
       if (prop in obj.data) {
         src = obj.data[prop]
       } else {
-        ifError(new Error('Property not set: ' + prop))
+        ifError(new Error(`Property not set: ${prop}`))
       }
     }
 
