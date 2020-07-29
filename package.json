@@ -13,15 +13,15 @@
     "editor": "^0.1.0",
     "json-stable-stringify": "^1.0.0",
     "level": "^6.0.1",
-    "mkdirp": "^0.3.5",
-    "parse-messy-time": "^1.2.1",
-    "strftime": "~0.6.2",
+    "mkdirp": "^1.0.4",
+    "parse-messy-time": "^2.1.0",
+    "strftime": "^0.8.0",
     "through2": "^2.0.3"
   },
   "devDependencies": {
     "rimraf": "^3.0.2",
     "standard": "^14.3.3",
-    "tape": "^4.9.1"
+    "tape": "^5.0.1"
   },
   "scripts": {
     "standard": "standard",
