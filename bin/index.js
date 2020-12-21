@@ -1,27 +1,27 @@
 #!/usr/bin/env node
 
-var path = require('path')
-var os = require('os')
-var fs = require('fs')
-var program = require('commander')
-var strftime = require('strftime')
-var editor = require('editor')
-var stringify = require('json-stable-stringify')
-var tmpdir = os.tmpdir()
+const path = require('path')
+const os = require('os')
+const fs = require('fs')
+const program = require('commander')
+const strftime = require('strftime')
+const editor = require('editor')
+const stringify = require('json-stable-stringify')
+const tmpdir = os.tmpdir()
 
-var Clocker = require('../lib/index')
-var util = require('../lib/util')
-var getDate = util.getDate
+const Clocker = require('../lib/index')
+const util = require('../lib/util')
+const getDate = util.getDate
 
 process.on('uncaughtException', err => {
   console.log(`error: ${err.message}`)
   process.exit(1)
 })
 
-var HOME = process.env.HOME || process.env.USERPROFILE
-var defaultDataDir = path.join(HOME, '.clocker')
+const HOME = process.env.HOME || process.env.USERPROFILE
+const defaultDataDir = path.join(HOME, '.clocker')
 
-var argvs = splitArgvs(process.argv)
+const argvs = splitArgvs(process.argv)
 
 program
   .name('clocker')
@@ -32,16 +32,16 @@ program
 // Adjust help output for set command
 //   as it has two optional arguments,
 //   which cannot be handled by commander
-var outputHelp = program.outputHelp.bind(program)
+const outputHelp = program.outputHelp.bind(program)
 program.outputHelp = function (cb) {
   cb = cb || function (passthru) { return passthru }
-  var newCb = function (text) {
+  const newCb = function (text) {
     return cb(text).replace('set [options] [stamp] <key> [value]', 'set [options] [stamp] <key> <value>')
   }
   outputHelp(newCb)
 }
 
-var datadir
+let datadir
 program.on('option:datadir', function (value) {
   datadir = value
 })
@@ -176,9 +176,8 @@ if (!argvs[0].slice(2).length) {
   program.help()
 }
 
+let clocker
 program.parse(argvs[0])
-
-var clocker
 
 function splitArgvs (argv) {
   // splits array on '--' value into array of arrays
@@ -199,7 +198,7 @@ function help () {
 function start (cmd) {
   clocker = initialize(cmd)
 
-  var data = {}
+  const data = {}
   ;['type', 'message'].forEach(function (prop) {
     if (cmd[prop]) {
       data[prop] = cmd[prop]
@@ -209,7 +208,7 @@ function start (cmd) {
   if (argvs[1]) {
     argvs[1].forEach(function (prop) {
       prop = prop.replace(/^-+/, '')
-      var [key, value] = prop.split('=')
+      const [key, value] = prop.split('=')
       data[key] = value
     })
   }
@@ -220,7 +219,7 @@ function start (cmd) {
 function stop (stamp, cmd) {
   clocker = initialize(cmd)
 
-  var data = {}
+  const data = {}
   ;['message'].forEach(function (prop) {
     if (cmd[prop]) {
       data[prop] = cmd[prop]
@@ -231,7 +230,7 @@ function stop (stamp, cmd) {
     if (stamp) {
       ifError(new Error('stamp can\'t be used together with \'--type\' option'))
     }
-    var filter = getFilter(cmd)
+    const filter = getFilter(cmd)
     clocker.data(filter, function (err, entries) {
       ifError(err)
       if (entries.length === 0) {
@@ -253,7 +252,7 @@ function restart (stamp, cmd) {
 
 function list (cmd) {
   clocker = initialize(cmd)
-  var filter = getFilter(cmd)
+  const filter = getFilter(cmd)
 
   clocker.dataStream(filter).on('error', function (err) {
     ifError(err)
@@ -270,23 +269,23 @@ function list (cmd) {
 
 function report (cmd) {
   clocker = initialize(cmd)
-  var filter = getFilter(cmd)
+  const filter = getFilter(cmd)
 
-  var reportDay = (cmd.reportDay && typeof cmd.reportDay === 'string') ? cmd.reportDay : 'today'
+  let reportDay = (cmd.reportDay && typeof cmd.reportDay === 'string') ? cmd.reportDay : 'today'
   reportDay = getDate(reportDay)
-  var reportDayTomorrow = new Date(reportDay.getTime() + (24 * 60 * 60 * 1000))
+  const reportDayTomorrow = new Date(reportDay.getTime() + (24 * 60 * 60 * 1000))
   filter.gt = reportDay
   filter.lt = reportDayTomorrow
 
   console.log('Report for %s:', printDate(reportDay))
 
-  var sumsByType = {}
-  var totalSum = 0
+  const sumsByType = {}
+  let totalSum = 0
   clocker.dataStream(filter).on('error', function (err) {
     ifError(err)
   }).on('end', function () {
     console.log('')
-    for (var stype in sumsByType) {
+    for (const stype in sumsByType) {
       console.log('%s: %s', stype, Clocker.formatElapsed(sumsByType[stype]))
       totalSum += sumsByType[stype]
     }
@@ -310,15 +309,15 @@ function report (cmd) {
 
 function csv (cmd) {
   clocker = initialize(cmd)
-  var filter = getFilter(cmd)
+  const filter = getFilter(cmd)
 
-  var additionalFields = []
+  let additionalFields = []
   if (cmd.props) {
     additionalFields = cmd.props
   }
 
   // print header
-  var header = 'Key,Date,Start,End,Duration,Archived,Type,Message'
+  let header = 'Key,Date,Start,End,Duration,Archived,Type,Message'
   if (additionalFields.length) {
     header += ','
     header += additionalFields.join(',')
@@ -330,9 +329,9 @@ function csv (cmd) {
   }).on('end', function () {
     success()
   }).on('data', function (entry) {
-    var data = entry.data || {}
-    var output = '%s,%s,%s,%s,%s,%s,"%s","%s"'
-    var fields = [
+    const data = entry.data || {}
+    let output = '%s,%s,%s,%s,%s,%s,"%s","%s"'
+    let fields = [
       entry.key,
       strftime('%F', entry.start),
       strftime('%T', entry.start),
@@ -366,12 +365,12 @@ function status (stamp, cmd) {
 
 function aggregateJson (cmd) {
   clocker = initialize(cmd)
-  var filter = getFilter(cmd)
+  const filter = getFilter(cmd)
 
   clocker.aggregate('day', filter, function (err, data) {
     ifError(err)
 
-    var json = {
+    const json = {
       hours: [],
       title: 'consulting'
     }
@@ -380,7 +379,7 @@ function aggregateJson (cmd) {
       json.rate = cmd.rate
     }
 
-    for (var date in data) {
+    for (const date in data) {
       json.hours.push({
         date: date,
         hours: Math.round(data[date] / 36) / 100
@@ -425,7 +424,7 @@ function move (stamp, start, cmd) {
 function add (start, end, cmd) {
   clocker = initialize(cmd)
 
-  var data = {
+  const data = {
     end: end
   }
   ;['type', 'message'].forEach(function (prop) {
@@ -443,16 +442,16 @@ function remove (stamp, cmd) {
 }
 
 function setArchive (archive, stamp, cmd) {
-  var value = (archive ? true : undefined)
-  var clocker = initialize(cmd)
+  const value = (archive ? true : undefined)
+  const clocker = initialize(cmd)
 
   if (!stamp && (cmd.lt || cmd.gt || cmd.filter || cmd.type)) {
     // (un)archive range
     cmd.all = !archive
-    var filter = getFilter(cmd)
+    const filter = getFilter(cmd)
 
     // filter only for (un)archived records
-    var oldTest = filter.test
+    const oldTest = filter.test
     filter.test = (e) => {
       if (!oldTest(e)) {
         return false
@@ -463,7 +462,7 @@ function setArchive (archive, stamp, cmd) {
       return true
     }
 
-    var stamps = []
+    const stamps = []
     clocker.dataStream(filter).on('error', function (err) {
       ifError(err)
     }).on('end', function () {
@@ -506,7 +505,7 @@ function edit (stamp, prop, cmd) {
       obj.data.end = strftime('%F %T', obj.end)
     }
 
-    var src = obj.data
+    let src = obj.data
     if (typeof prop !== 'undefined') {
       if (prop in obj.data) {
         src = obj.data[prop]
@@ -545,7 +544,7 @@ function initialize (cmd) {
 }
 
 function getFilter (cmd) {
-  var filter = {}
+  const filter = {}
   cmd.filter = cmd.filter || []
 
   if (cmd.type) {
@@ -553,7 +552,7 @@ function getFilter (cmd) {
   }
 
   cmd.filter.forEach((cmdFilter) => {
-    var kv = cmdFilter.split('=')
+    const kv = cmdFilter.split('=')
     if (isRegex(kv[1])) {
       extendFilter(filter, (e) => RegExp(kv[1].slice(1, -1)).test(e.data[kv[0]]))
     } else {
@@ -584,7 +583,7 @@ function extendFilter (filter, func) {
     return
   }
 
-  var oldTest = filter.test
+  const oldTest = filter.test
   filter.test = (e) => (oldTest(e) && func(e))
 }
 
@@ -607,7 +606,7 @@ function nil (err) {
 }
 
 function editEntry (src, cb) {
-  var file = path.join(tmpdir, 'clocker-' + Math.random())
+  const file = path.join(tmpdir, 'clocker-' + Math.random())
   fs.writeFile(file, src || '', function (err) {
     ifError(err)
 
@@ -626,7 +625,7 @@ function editEntry (src, cb) {
 }
 
 function printEntry (entry) {
-  var data = entry.data || {}
+  const data = entry.data || {}
 
   console.log(
     '%s  %s  [ %s - %s ]  (%s)%s%s',
@@ -642,7 +641,7 @@ function printEntry (entry) {
 
 function printMessage (message) {
   if (message) {
-    var lines = message.split('\n')
+    const lines = message.split('\n')
     console.log()
     lines.forEach(function (line) {
       console.log('    ' + line)
@@ -657,7 +656,7 @@ function printDate (date) {
     return printDate(date)
   }
 
-  var monthNames = [
+  const monthNames = [
     'January', 'February', 'March',
     'April', 'May', 'June', 'July',
     'August', 'September', 'October',
