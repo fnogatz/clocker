@@ -78,6 +78,9 @@ program
   .option('-t, --type <value>', 'short for --filter "type=<value>"')
   .option('--gt <date>', 'show dates from gt on')
   .option('--lt <date>', 'show dates upto')
+  .option('--week [value]', 'show given week')
+  .option('--month [value]', 'show given month')
+  .option('--year [value]', 'show given year')
   .option('-r, --rate <value>', 'add rate property', parseFloat)
   .option('-a, --all', 'include archived dates')
   .action(aggregateJson)
@@ -91,6 +94,9 @@ program
   .option('-t, --type <value>', 'short for --filter "type=<value>"')
   .option('--gt <date>', 'show dates from gt on')
   .option('--lt <date>', 'show dates upto')
+  .option('--week [value]', 'show given week')
+  .option('--month [value]', 'show given month')
+  .option('--year [value]', 'show given year')
   .option('-a, --all', 'include archived dates')
   .action(list)
 
@@ -109,6 +115,9 @@ program
   .option('-t, --type <value>', 'short for --filter "type=<value>"')
   .option('--gt <date>', 'show dates from gt on')
   .option('--lt <date>', 'show dates upto')
+  .option('--week [value]', 'show given week')
+  .option('--month [value]', 'show given month')
+  .option('--year [value]', 'show given year')
   .option('-a, --all', 'include archived dates')
   .option('--props <fields>', 'additionally displayed fields', cmdlist)
   .action(csv)
@@ -156,6 +165,9 @@ program
   .option('-t, --type <value>', 'short for --filter "type=<value>"')
   .option('--gt <date>', 'archive dates from gt on')
   .option('--lt <date>', 'archive dates upto')
+  .option('--week [value]', 'show given week')
+  .option('--month [value]', 'show given month')
+  .option('--year [value]', 'show given year')
   .action(archive)
 
 program
@@ -163,6 +175,9 @@ program
   .description('unarchive a range of clocked records or a specific stamp')
   .option('--gt <date>', 'unarchive dates from gt on')
   .option('--lt <date>', 'unarchive dates upto')
+  .option('--week [value]', 'show given week')
+  .option('--month [value]', 'show given month')
+  .option('--year [value]', 'show given year')
   .action(unarchive)
 
 program
@@ -567,6 +582,30 @@ function getFilter (cmd) {
   }
   if (cmd.lt) {
     filter.lt = cmd.lt
+  }
+  if (cmd.week) {
+    let date = (cmd.week && typeof cmd.week === 'string') ? cmd.week : 'today'
+    date = getDate(date)
+    const day = date.getDay()
+    const diff = date.getDate() - day + (day === 0 ? -6 : 1)
+    date.setDate(diff)
+    date.setHours(0)
+    date.setMinutes(0)
+    date.setSeconds(0)
+    filter.gt = date
+    filter.lt = new Date(date.getTime() + (7 * 24 * 60 * 60 * 1000))
+  }
+  if (cmd.month) {
+    let date = (cmd.week && typeof cmd.week === 'string') ? cmd.week : 'today'
+    date = getDate(date)
+    filter.gt = new Date(date.getFullYear(), date.getMonth(), 1)
+    filter.lt = new Date(date.getFullYear(), date.getMonth() + 1, 1)
+  }
+  if (cmd.year) {
+    let date = (cmd.week && typeof cmd.week === 'string') ? cmd.week : 'today'
+    date = getDate(date)
+    filter.gt = new Date(date.getFullYear(), 0, 1)
+    filter.lt = new Date(date.getFullYear() + 1, 0, 1)
   }
 
   if (!cmd.all) {
