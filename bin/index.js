@@ -78,6 +78,7 @@ program
   .option('-t, --type <value>', 'short for --filter "type=<value>"')
   .option('--gt <date>', 'show dates from gt on')
   .option('--lt <date>', 'show dates upto')
+  .option('--day [value]', 'show given day')
   .option('--week [value]', 'show given week')
   .option('--month [value]', 'show given month')
   .option('--year [value]', 'show given year')
@@ -94,6 +95,7 @@ program
   .option('-t, --type <value>', 'short for --filter "type=<value>"')
   .option('--gt <date>', 'show dates from gt on')
   .option('--lt <date>', 'show dates upto')
+  .option('--day [value]', 'show given day')
   .option('--week [value]', 'show given week')
   .option('--month [value]', 'show given month')
   .option('--year [value]', 'show given year')
@@ -115,6 +117,7 @@ program
   .option('-t, --type <value>', 'short for --filter "type=<value>"')
   .option('--gt <date>', 'show dates from gt on')
   .option('--lt <date>', 'show dates upto')
+  .option('--day [value]', 'show given day')
   .option('--week [value]', 'show given week')
   .option('--month [value]', 'show given month')
   .option('--year [value]', 'show given year')
@@ -165,6 +168,7 @@ program
   .option('-t, --type <value>', 'short for --filter "type=<value>"')
   .option('--gt <date>', 'archive dates from gt on')
   .option('--lt <date>', 'archive dates upto')
+  .option('--day [value]', 'show given day')
   .option('--week [value]', 'show given week')
   .option('--month [value]', 'show given month')
   .option('--year [value]', 'show given year')
@@ -175,6 +179,7 @@ program
   .description('unarchive a range of clocked records or a specific stamp')
   .option('--gt <date>', 'unarchive dates from gt on')
   .option('--lt <date>', 'unarchive dates upto')
+  .option('--day [value]', 'show given day')
   .option('--week [value]', 'show given week')
   .option('--month [value]', 'show given month')
   .option('--year [value]', 'show given year')
@@ -582,6 +587,14 @@ function getFilter (cmd) {
   }
   if (cmd.lt) {
     filter.lt = cmd.lt
+  }
+  if (cmd.day) {
+    let date = (cmd.day && typeof cmd.day === 'string') ? cmd.day : 'today'
+    date = getDate(date)
+    date = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+    const tomorrow = new Date(date.getTime() + (24 * 60 * 60 * 1000))
+    filter.gt = date
+    filter.lt = tomorrow
   }
   if (cmd.week) {
     let date = (cmd.week && typeof cmd.week === 'string') ? cmd.week : 'today'
