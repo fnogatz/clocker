@@ -14,6 +14,11 @@ const util = require('../lib/util')
 const getDate = util.getDate
 
 process.on('uncaughtException', err => {
+  if (err.type === 'OpenError') {
+    console.log('ERROR: clocker database currently locked, probably by another process?')
+    process.exit(1)
+  }
+
   console.log(`error: ${err.message}`)
   process.exit(1)
 })
