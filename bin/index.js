@@ -100,6 +100,7 @@ program
   .option('--month [value]', 'show given month')
   .option('--year [value]', 'show given year')
   .option('-a, --all', 'include archived dates')
+  .option('-r, --report', 'show report of all logged data entries')
   .action(list)
 
 program
@@ -274,42 +275,27 @@ function list (cmd) {
   clocker = initialize(cmd)
   const filter = getFilter(cmd)
 
-  clocker.dataStream(filter).on('error', function (err) {
-    ifError(err)
-  }).on('end', function () {
-    success()
-  }).on('data', function (entry) {
-    printEntry(entry)
-
-    if (cmd.verbose) {
-      printMessage(entry.data.message)
+  if (cmd.report) {
+    if (filter.lt && filter.gt && filter.lt.getTime() - filter.gt.getTime() === 24 * 60 * 60 * 1000) {
+      console.log('Report for %s:', printDate(filter.gt))
+    } else {
+      console.log('Report for %s – %s:', printDate(filter.gt, 'open start'), printDate(filter.lt, 'open end'))
     }
-  })
-}
-
-function report (cmd) {
-  clocker = initialize(cmd)
-  const filter = getFilter(cmd)
-
-  let reportDay = (cmd.reportDay && typeof cmd.reportDay === 'string') ? cmd.reportDay : 'today'
-  reportDay = getDate(reportDay)
-  const reportDayTomorrow = new Date(reportDay.getTime() + (24 * 60 * 60 * 1000))
-  filter.gt = reportDay
-  filter.lt = reportDayTomorrow
-
-  console.log('Report for %s:', printDate(reportDay))
+  }
 
   const sumsByType = {}
   let totalSum = 0
   clocker.dataStream(filter).on('error', function (err) {
     ifError(err)
   }).on('end', function () {
-    console.log('')
-    for (const stype in sumsByType) {
-      console.log('%s: %s', stype, Clocker.formatElapsed(sumsByType[stype]))
-      totalSum += sumsByType[stype]
+    if (cmd.report) {
+      console.log('')
+      for (const stype in sumsByType) {
+        console.log('%s: %s', stype, Clocker.formatElapsed(sumsByType[stype]))
+        totalSum += sumsByType[stype]
+      }
+      console.log('\ntotal: %s', Clocker.formatElapsed(totalSum))
     }
-    console.log('\ntotal: %s', Clocker.formatElapsed(totalSum))
 
     success()
   }).on('data', function (entry) {
@@ -325,6 +311,13 @@ function report (cmd) {
       sumsByType[entry.data.type] = entry.elapsed
     }
   })
+}
+
+function report (cmd) {
+  cmd.day = cmd.reportDay ?? true
+  cmd.report = true
+
+  return list(cmd)
 }
 
 function csv (cmd) {
@@ -702,7 +695,11 @@ function printMessage (message) {
   }
 }
 
-function printDate (date) {
+function printDate (date, defaultStr = 'n/a') {
+  if (typeof date === 'undefined') {
+    return defaultStr
+  }
+
   if (typeof date === 'string') {
     date = getDate(date)
     return printDate(date)
