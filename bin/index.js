@@ -110,8 +110,16 @@ program
 
 program
   .command('report')
-  .description('show all logged hours of a specific day')
+  .description('show all logged hours and report')
   .option('-v, --verbose', 'also show clocked messages')
+  .option('--filter <key=value>', 'filter by key, value as string or /regex/', collect, [])
+  .option('-t, --type <value>', 'short for --filter "type=<value>"')
+  .option('--gt <date>', 'show dates from gt on')
+  .option('--lt <date>', 'show dates upto')
+  .option('--day [value]', 'show given day (default: today)')
+  .option('--week [value]', 'show given week (default: current week)')
+  .option('--month [value]', 'show given month (default: current month)')
+  .option('--year [value]', 'show given year (default: current year)')
   .option('--reportDay <value>', 'day to use')
   .option('-a, --all', 'include archived dates')
   .action(report)
@@ -319,7 +327,7 @@ function list (cmd) {
 }
 
 function report (cmd) {
-  cmd.day = cmd.reportDay ?? true
+  cmd.day = cmd.reportDay ?? cmd.day ?? true
   cmd.report = true
 
   return list(cmd)
