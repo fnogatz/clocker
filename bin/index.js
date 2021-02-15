@@ -34,18 +34,6 @@ program
   .description('track project hours')
   .option('-d, --datadir <path>', 'directory for storage', defaultDataDir)
 
-// Adjust help output for set command
-//   as it has two optional arguments,
-//   which cannot be handled by commander
-const outputHelp = program.outputHelp.bind(program)
-program.outputHelp = function (cb) {
-  cb = cb || function (passthru) { return passthru }
-  const newCb = function (text) {
-    return cb(text).replace('set [options] [stamp] <key> [value]', 'set [options] [stamp] <key> <value>')
-  }
-  outputHelp(newCb)
-}
-
 let datadir
 program.on('option:datadir', function (value) {
   datadir = value
