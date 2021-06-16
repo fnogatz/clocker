@@ -15,7 +15,7 @@
     "level": "^7.0.0",
     "mkdirp": "^1.0.4",
     "parse-messy-time": "^2.1.0",
-    "strftime": "^0.8.0"
+    "strftime": "^0.10.0"
   },
   "devDependencies": {
     "rimraf": "^3.0.2",
