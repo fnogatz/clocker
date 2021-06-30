@@ -277,7 +277,7 @@ function list (cmd) {
   const filter = getFilter(cmd)
 
   if (cmd.report) {
-    if (filter.lt && filter.gt && filter.lt.getTime() - filter.gt.getTime() === 24 * 60 * 60 * 1000) {
+    if (filter.lt && filter.gt && getDate(filter.lt).getTime() - getDate(filter.gt).getTime() === 24 * 60 * 60 * 1000) {
       console.log('Report for %s:', printDate(filter.gt))
     } else {
       console.log('Report for %s – %s:', printDate(filter.gt, 'open start'), printDate(filter.lt, 'open end'))
