@@ -6,10 +6,10 @@
     "clocker": "bin/index.js"
   },
   "engines": {
-    "node": ">= 8.6.0"
+    "node": ">= 12"
   },
   "dependencies": {
-    "commander": "^7.1.0",
+    "commander": "^8.1.0",
     "editor": "^1.0.0",
     "json-stable-stringify": "^1.0.0",
     "level": "^7.0.0",
