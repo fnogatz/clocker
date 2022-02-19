@@ -34,7 +34,7 @@ $ clocker list
 You can see a report of all logged hours of a specific day with `clocker report` command:
 
 ```
-$ clocker report --reportDay 2018-05-23
+$ clocker report --day 2018-05-23
 Report for 23 May 2018:
 1527053106  2018-05-23  [ 07:25:06 - 08:09:25 ]  (00:44:19)  [TYPE_A]
 1527056838  2018-05-23  [ 08:27:18 - 11:30:00 ]  (03:02:42)  [TYPE_B]
@@ -48,7 +48,7 @@ TYPE_C: 00:28:18
 total: 07:45:37
 ```
 
-Without the `--reportDay` option, the report command will list all logged hours of the current day.
+Without the `--day` option, the report command will list all logged hours of the current day.
 
 You can generate a json dump with `clocker data`:
 
@@ -112,10 +112,10 @@ usage:
     Show dates between lt and gt. Show archived dates with -a.
     Optionally filter by TYPE, a string or /regex/.
 
-  clocker report {-v, --reportDay DATE}
+  clocker report {-v, --day DATE}
     Show all logged hours of a specific day.
     In verbose mode (-v), also show clocked messages.
-    If no --reportDay is set, the current day will be used.
+    If no --day is set, the current day will be used.
 
   clocker csv {--gt DATE, --lt DATE, --props FIELDS, -a}
     Generate CSV output.

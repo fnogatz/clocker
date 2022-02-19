@@ -108,7 +108,7 @@ program
   .option('--week [value]', 'show given week (default: current week)')
   .option('--month [value]', 'show given month (default: current month)')
   .option('--year [value]', 'show given year (default: current year)')
-  .option('--reportDay <value>', 'day to use')
+  .addOption(new program.Option('--reportDay <value>', 'day to use').hideHelp())
   .option('-a, --all', 'include archived dates')
   .action(report)
 
