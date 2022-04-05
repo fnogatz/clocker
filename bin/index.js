@@ -124,6 +124,7 @@ program
   .option('--month [value]', 'show given month (default: current month)')
   .option('--year [value]', 'show given year (default: current year)')
   .option('-a, --all', 'include archived dates')
+  .option('--bom', 'include BOM')
   .option('--props <fields>', 'additionally displayed fields', cmdlist)
   .action(csv)
 
@@ -332,6 +333,9 @@ function csv (cmd) {
 
   // print header
   let header = 'Key,Date,Start,End,Duration,Archived,Type,Message'
+  if (cmd.bom) {
+    header = '\ufeff' + header
+  }
   if (additionalFields.length) {
     header += ','
     header += additionalFields.join(',')
