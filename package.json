@@ -29,9 +29,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/substack/clocker.git"
+    "url": "git://github.com/fnogatz/clocker.git"
   },
-  "homepage": "https://github.com/substack/clocker",
+  "homepage": "https://github.com/fnogatz/clocker",
   "keywords": [
     "consulting",
     "hours",
@@ -39,10 +39,6 @@
     "tracking",
     "invoice"
   ],
-  "author": {
-    "name": "James Halliday",
-    "email": "mail@substack.net",
-    "url": "http://substack.net"
-  },
+  "author": "Falco Nogatz <fnogatz@gmail.com>",
   "license": "MIT"
 }
