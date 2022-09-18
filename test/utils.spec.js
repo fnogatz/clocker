@@ -1,5 +1,5 @@
 const test = require('tape')
-const { getKey, formatElapsed } = require('../lib/util')
+const { formatElapsed } = require('../lib/util')
 
 test('formatElapsed', (t) => {
   const testCases = [
