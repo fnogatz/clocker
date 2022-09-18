@@ -399,7 +399,7 @@ function aggregateJson (cmd) {
 
     for (const date in data) {
       json.hours.push({
-        date: date,
+        date,
         hours: Math.round(data[date] / 36) / 100
       })
     }
@@ -443,7 +443,7 @@ function add (start, end, cmd) {
   clocker = initialize(cmd)
 
   const data = {
-    end: end
+    end
   }
   ;['type', 'message'].forEach(function (prop) {
     if (cmd[prop]) {
