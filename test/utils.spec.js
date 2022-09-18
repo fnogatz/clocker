@@ -15,18 +15,3 @@ test('formatElapsed', (t) => {
     })
   })
 })
-
-test('getKey', (t) => {
-  const testCases = [
-    [NaN, 'time!NaN'],
-    [new Date('2019-05-16'), 'time!2019-05-16 02:00:00'],
-    [new Date(1520921700000), 'time!2018-03-13 07:15:00']
-  ]
-  testCases.forEach(([stringWithTimestamp, expectedEpochSeconds]) => {
-    t.test(`${stringWithTimestamp} => ${expectedEpochSeconds}`, (t) => {
-      const result = getKey(stringWithTimestamp)
-      t.equal(result, expectedEpochSeconds)
-      t.end()
-    })
-  })
-})
