@@ -3,7 +3,7 @@
 const path = require('path')
 const os = require('os')
 const fs = require('fs')
-const program = require('commander')
+const { program, Option } = require('commander')
 const strftime = require('strftime')
 const editor = require('editor')
 const stringify = require('json-stable-stringify')
@@ -108,7 +108,7 @@ program
   .option('--week [value]', 'show given week (default: current week)')
   .option('--month [value]', 'show given month (default: current month)')
   .option('--year [value]', 'show given year (default: current year)')
-  .addOption(new program.Option('--reportDay <value>', 'day to use').hideHelp())
+  .addOption(new Option('--reportDay <value>', 'day to use').hideHelp())
   .option('-a, --all', 'include archived dates')
   .action(report)
 
