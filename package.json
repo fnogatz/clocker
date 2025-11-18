@@ -20,7 +20,7 @@
     "strftime": "^0.10.0"
   },
   "devDependencies": {
-    "rimraf": "^5.0.8",
+    "rimraf": "^6.1.0",
     "standard": "^17.0.0",
     "tape": "^5.0.1"
   },
