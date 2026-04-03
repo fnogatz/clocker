@@ -13,7 +13,7 @@
     "editor": "^1.0.0",
     "json-stable-stringify": "^1.0.0",
     "level": "^8.0.0",
-    "level-read-stream": "^1.1.0",
+    "level-read-stream": "^2.0.0",
     "mkdirp": "^3.0.1",
     "parse-messy-time": "^2.1.0",
     "readable-stream": "^4.1.0",
