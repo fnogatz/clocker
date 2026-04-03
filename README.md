@@ -161,7 +161,3 @@ npm install -g clocker
 ```
 
 to get the clocker command.
-
-# license
-
-MIT
