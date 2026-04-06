@@ -9,7 +9,7 @@
     "node": ">= 20"
   },
   "dependencies": {
-    "commander": "^12.1.0",
+    "commander": "^14.0.3",
     "editor": "^1.0.0",
     "json-stable-stringify": "^1.0.0",
     "level": "^8.0.0",

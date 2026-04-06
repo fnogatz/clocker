@@ -48,20 +48,23 @@ program
   .action(start)
 
 program
-  .command('stop [stamp]')
+  .command('stop')
   .description('stop the clock')
+  .argument('[stamp]', 'stamp to stop (default: latest)')
   .option('-t, --type <value>', 'use latest of type instead of stamp')
   .option('-m, --message <value>')
   .action(stop)
 
 program
-  .command('restart [stamp]')
+  .command('restart')
   .description('restart the clock')
+  .argument('[stamp]', 'stamp to restart (default: latest)')
   .action(restart)
 
 program
-  .command('status [stamp]')
+  .command('status')
   .description('show the elapsed time')
+  .argument('[stamp]', 'stamp to return the status for (default: latest)')
   .action(status)
 
 program
@@ -136,13 +139,15 @@ program
   .action(add)
 
 program
-  .command('get [stamp]')
+  .command('get')
+  .argument('[stamp]', 'stamp to get (default: latest)')
   .description('get the raw data')
   .action(get)
 
 program
-  .command('remove [stamp]')
+  .command('remove')
   .alias('rm')
+  .argument('[stamp]', 'stamp to remove (default: latest)')
   .description('remove an entry')
   .action(remove)
 
@@ -153,7 +158,9 @@ program
   .action(set)
 
 program
-  .command('edit [stamp] [key]')
+  .command('edit')
+  .argument('[stamp]', 'stamp to edit (default: latest)')
+  .argument('[key]', 'key to edit for this stamp (default: edit whole entry)')
   .description('launch $EDITOR to edit the record')
   .action(edit)
 
@@ -165,8 +172,9 @@ program
   .action(move)
 
 program
-  .command('archive [stamp]')
+  .command('archive')
   .description('archive a range or filtered set of clocked records or a specific stamp')
+  .argument('[stamp]', 'stamp to archive (default: latest)')
   .option('--filter <key=value>', 'filter by key, value as string or /regex/', collect, [])
   .option('-t, --type <value>', 'short for --filter "type=<value>"')
   .option('--gt <date>', 'archive dates from gt on')
@@ -178,8 +186,9 @@ program
   .action(archive)
 
 program
-  .command('unarchive [stamp]')
+  .command('unarchive')
   .description('unarchive a range of clocked records or a specific stamp')
+  .argument('[stamp]', 'stamp to unarchive (default: latest)')
   .option('--gt <date>', 'unarchive dates from gt on')
   .option('--lt <date>', 'unarchive dates upto')
   .option('--day [value]', 'show given day (default: today)')
